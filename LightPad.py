@@ -17,6 +17,6 @@ class LightPad(Thread):
             val = randint(0, 30)
             #val = 2
             if val != lastVal:
-                print('Lightpad Value changed %d for id %d' % (val, self.id))
+                #print('Lightpad Value changed %d for id %d' % (val, self.id))
                 self.on_lightval_changed(self.id, val)
                 lastVal = val
