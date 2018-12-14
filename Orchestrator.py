@@ -38,9 +38,11 @@ class Orchestrator(StateMachine):
         self.motorDriver = MotorDriver(self.finished_paper_prep)
         self.sizeCalculator = SizeCalculator(self.finished_size_calc)
         #obj = OrchestratorState(state="idle")
-        ws = websockets.serve(self.register, '', 5678)
-        asyncio.get_event_loop().run_until_complete(ws)
-        asyncio.get_event_loop().run_forever()
+        ws = websockets.serve(self.serve, '', 5678)
+        self.ws_loop = asyncio.get_event_loop()
+        self.ws_loop.run_until_complete(ws)
+        self.ws_loop.run_forever()
+
 
     def on_enter_start(self):
         print('Measuring distance now! bsss bssss ')
@@ -72,11 +74,14 @@ class Orchestrator(StateMachine):
         # send message to ws to render arrow projection
         self.send_current_state()
 
+
     def on_enter_giftWrapped(self):
         print('gift was placed')
         # project arrows onto the paper now
         # send message to ws to render arrow projection
         self.send_current_state()
+
+    print("Sent current state")
 
     def handle_lightpad_change(self, id, value):
         try:
@@ -97,23 +102,28 @@ class Orchestrator(StateMachine):
             #print("Transition not allowed")
             print(self.current_state)
 
-    async def register(self, websocket, path):
+    async def register(self, websocket):
+
         # send message corresponding to current state to the clients
         USERS.add(websocket)
-        await self.send_current_state()
+
 
     async def unregister(self,websocket):
-        await USERS.remove(websocket)
+        USERS.remove(websocket)
 
     def send_current_state(self):
-        loop = asyncio.get_event_loop()
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
         task = loop.create_task(self.send_message(self.get_current_message()))
+        loop.run_until_complete(task)
+
 
     async def send_message(self, message):
         print("Send message")
         if USERS:
             print("Sending message to users ", message)
             [await user.send(message) for user in USERS]
+            #await USERS[0].send(message)
             print("message sent")
 
     def get_current_message(self):
@@ -127,6 +137,15 @@ class Orchestrator(StateMachine):
             "paper_height": self.sizeCalculator.paper_height,
         }
         return str(message).replace("'",'"')
+
+    async def serve(self, websocket, path):
+        await self.register(websocket)
+        try:
+            await self.send_message(self.get_current_message())
+            while(True):
+                pass
+        finally:
+            await self.unregister(websocket)
 
 
 if __name__ == "__main__":

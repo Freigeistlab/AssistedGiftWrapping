@@ -17,12 +17,12 @@ ws.onmessage = function (event) {
 
 function renderPaperFrame(width, height){
   //TODO
-  $("#paperFrame").innerText = "Test"
+  $("#paperFrame").toggle();
   console.log("render paper frame")
 }
 
 function renderGiftOnPaperFrame(paper_width, paper_height, gift_width, gift_height){
   //TODO
-  $("#giftOnPaperFrame").innerText = "Test2"
+  $("#giftOnPaperFrame").toggle();
   console.log("render gift on paper frame")
 }
