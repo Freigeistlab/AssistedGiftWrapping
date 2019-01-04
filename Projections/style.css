@@ -1,0 +1,35 @@
+body {
+    background-image: url("img/holz.jpg");
+    background-repeat: no-repeat;
+    background-size: 100%;
+}
+
+#paperFrame {
+    visibility: hidden;
+    background-image: url("img/papier_weiss_rot.jpg");
+    border: black;
+    border-style: dashed;
+    border-width: 4px;
+    position: absolute;
+}
+
+#giftOnPaper {
+    visibility: hidden;
+    border: black;
+    border-style: dashed;
+    border-width: 4px;
+    position: absolute;
+}
+
+.verticalIndicator {
+    border-left: 2px dashed black;
+    border-right: 2px dashed black;
+    visibility: hidden;
+    position: absolute;
+}
+
+.horizontalIndicator {
+    border-top: 3px dashed black;
+    visibility: hidden;
+    position: absolute;
+}

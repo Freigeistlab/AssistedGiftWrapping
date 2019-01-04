@@ -2,15 +2,24 @@
 <html>
 <head>
     <title>Projektion</title>
-    <script src="./projections.js"></script>
+    <link rel="stylesheet" href="style.css"/>
     <script src="./lib/jquery-3.2.1.min.js"></script>
+    <script src="./projections.js"></script>
 </head>
 <body>
-<div id="paperFrame" hidden="true">
-    <img src="img/frame.png" alt="frame"/>
-</div>
-<div id="giftOnPaperFrame" hidden="true">
-    <img src="img/gift.png" alt="gift"/>
-</div>
+    <span id="paperFrame">
+    </span>
+    <img src="img/gift.png" id="giftOnPaper" alt="gift"/>
+    <div id="foldIncicators">
+        <div id="leftVertical" class="verticalIndicator"></div>
+        <div id="innerLeftVertical" class="verticalIndicator"></div>
+        <div id="innerRightVertical" class="verticalIndicator"></div>
+        <div id="rightVertical" class="verticalIndicator"></div>
+
+        <div id="topHorizontal" class="horizontalIndicator"></div>
+        <div id="innerTopHorizontal" class="horizontalIndicator"></div>
+        <div id="innerBottomHorizontal" class="horizontalIndicator"></div>
+        <div id="bottomHorizontal" class="horizontalIndicator"></div>
+    </div>
 </body>
 </html>

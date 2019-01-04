@@ -133,6 +133,7 @@ class Orchestrator(StateMachine):
             "state": state_id,
             "gift_width": self.sizeCalculator.gift_width,
             "gift_height": self.sizeCalculator.gift_height,
+            "gift_depth": self.sizeCalculator.gift_depth,
             "paper_width": self.sizeCalculator.paper_width,
             "paper_height": self.sizeCalculator.paper_height,
         }
