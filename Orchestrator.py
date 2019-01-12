@@ -1,11 +1,12 @@
 from statemachine import StateMachine, State, exceptions
-import websockets, asyncio
 
+from DeviceServer import DeviceServer
 from LightPad import LightPad
 from MotorDriver import MotorDriver
-from SizeCalculator import SizeCalculator
+from GiftSizeCalculator import GiftSizeCalculator
+from PaperLengthWatcher import PaperLengthWatcher
+from WebSocket import WebSocket
 
-USERS = set()
 
 class Orchestrator(StateMachine):
     print("Started orchestrator")
@@ -31,18 +32,19 @@ class Orchestrator(StateMachine):
     def __init__(self):
         super().__init__()
         # bluetooth_handler = BluetoothHandler()
-        lightpad1 = LightPad(self.handle_lightpad_change, 1)
-        lightpad2 = LightPad(self.handle_lightpad_change, 2)
-        lightpad1.start()
-        lightpad2.start()
-        self.motorDriver = MotorDriver(self.finished_paper_prep)
-        self.sizeCalculator = SizeCalculator(self.finished_size_calc)
-        #obj = OrchestratorState(state="idle")
-        ws = websockets.serve(self.serve, '', 5678)
-        self.ws_loop = asyncio.get_event_loop()
-        self.ws_loop.run_until_complete(ws)
-        self.ws_loop.run_forever()
+        self.webSocket = WebSocket(self)
+        self.webSocket.start()
+        print("test")
+        self.paperLengthWatcher = PaperLengthWatcher(self.on_paper_teared)
+        self.sizeCalculator = GiftSizeCalculator(self.finished_size_calc)
 
+        #lightpad1 = LightPad(self.handle_lightpad_change, 1)
+        #lightpad2 = LightPad(self.handle_lightpad_change, 2)
+        #lightpad1.start()
+        #lightpad2.start()
+        #self.motorDriver = MotorDriver(self.finished_paper_prep)
+        self.deviceServer = DeviceServer(self)
+        self.deviceServer.start()
 
     def on_enter_start(self):
         print('Measuring distance now! bsss bssss ')
@@ -52,34 +54,34 @@ class Orchestrator(StateMachine):
         print('Object was removed from top left corner')
 
     def on_enter_sizeCalculated(self):
-        print('Size calculated - starting to push out the paper')
-        self.motorDriver.set_paper_length(self.sizeCalculator.paper_width)
-        self.motorDriver.start()
+        print('Size calculated - watching the paper now')
+        #self.motorDriver.set_paper_length(self.sizeCalculator.paper_width)
+        #self.motorDriver.start()
+        self.paperLengthWatcher.set_paper_dimensions(self.sizeCalculator.paper_width,self.sizeCalculator.paper_height)
 
     def on_enter_paperPrepared(self):
         print('Finished paper prep!')
         # project paper onto the table now
         # send message to ws to render paper projection
-        self.send_current_state()
+        self.webSocket.send_current_state()
 
     def on_enter_paperLaidOut(self):
         print('Project the gift onto the paper')
         # project gift onto the paper now
         # send message to ws to render gift projection
-        self.send_current_state()
+        self.webSocket.send_current_state()
 
     def on_enter_giftPlaced(self):
         print('Project the arrows onto the paper')
         # project arrows onto the paper now
         # send message to ws to render arrow projection
-        self.send_current_state()
-
+        self.webSocket.send_current_state()
 
     def on_enter_giftWrapped(self):
         print('gift was placed')
         # project arrows onto the paper now
         # send message to ws to render arrow projection
-        self.send_current_state()
+        self.webSocket.send_current_state()
 
     print("Sent current state")
 
@@ -102,29 +104,8 @@ class Orchestrator(StateMachine):
             #print("Transition not allowed")
             print(self.current_state)
 
-    async def register(self, websocket):
-
-        # send message corresponding to current state to the clients
-        USERS.add(websocket)
-
-
-    async def unregister(self,websocket):
-        USERS.remove(websocket)
-
-    def send_current_state(self):
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        task = loop.create_task(self.send_message(self.get_current_message()))
-        loop.run_until_complete(task)
-
-
-    async def send_message(self, message):
-        print("Send message")
-        if USERS:
-            print("Sending message to users ", message)
-            [await user.send(message) for user in USERS]
-            #await USERS[0].send(message)
-            print("message sent")
+    def on_paper_teared(self, paper_length):
+        self.finished_paper_prep()
 
     def get_current_message(self):
 
@@ -138,15 +119,6 @@ class Orchestrator(StateMachine):
             "paper_height": self.sizeCalculator.paper_height,
         }
         return str(message).replace("'",'"')
-
-    async def serve(self, websocket, path):
-        await self.register(websocket)
-        try:
-            await self.send_message(self.get_current_message())
-            while(True):
-                pass
-        finally:
-            await self.unregister(websocket)
 
 
 if __name__ == "__main__":
