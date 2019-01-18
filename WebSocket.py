@@ -44,7 +44,6 @@ class WebSocket(Thread):
         if USERS:
             print("Sending message to users ", message)
             [await user.send(message) for user in USERS]
-            #await USERS[0].send(message)
             print("message sent")
 
     def run(self):

@@ -4,6 +4,7 @@ from DeviceServer import DeviceServer
 from LightPad import LightPad
 from MotorDriver import MotorDriver
 from GiftSizeCalculator import GiftSizeCalculator
+from OrderHandler import OrderHandler
 from PaperLengthWatcher import PaperLengthWatcher
 from WebSocket import WebSocket
 
@@ -13,6 +14,7 @@ class Orchestrator(StateMachine):
 
     # states
     idle = State('Idle', initial=True)
+    waitingForGift = State('WaitingForGift')
     start = State('Start')
     sizeCalculated = State('SizeCalculated')
     paperPrepared = State('PaperPrepared')
@@ -21,23 +23,25 @@ class Orchestrator(StateMachine):
     giftWrapped = State('GiftWrapped')
 
     # actions
-    lightpad1_darkened = idle.to(start) # when gift was placed on lightpad 1 (in the corner)
+    new_order = idle.to(waitingForGift)
+    lightpad1_darkened = waitingForGift.to(start) # when gift was placed on lightpad 1 (in the corner)
     lightpad1_lightened_up = start.to(idle) # when gift was removed from corner
     finished_size_calc = start.to(sizeCalculated) # when size was calculated continue with preparing paper
     finished_paper_prep = sizeCalculated.to(paperPrepared) # paper is prepared. now project the paper on the table
     lightpad2_darkened_little = paperPrepared.to(paperLaidOut) | giftPlaced.to(paperLaidOut) # paper is laid out (lightpad2 is semi-bright). now project the gift on top of the paper
     lightpad2_lightened_up = paperLaidOut.to(paperPrepared)
     lightpad2_darkened_completely = paperLaidOut.to(giftPlaced) # paper is laid out. now project the gift on top of the paper
+    finish = giftPlaced.to(idle)
+    next_order = giftPlaced.to(waitingForGift)
 
     def __init__(self):
         super().__init__()
         # bluetooth_handler = BluetoothHandler()
         self.webSocket = WebSocket(self)
         self.webSocket.start()
-        print("test")
         self.paperLengthWatcher = PaperLengthWatcher(self.on_paper_teared)
         self.sizeCalculator = GiftSizeCalculator(self.finished_size_calc)
-
+        self.orderHandler = OrderHandler(self.new_order)
         #lightpad1 = LightPad(self.handle_lightpad_change, 1)
         #lightpad2 = LightPad(self.handle_lightpad_change, 2)
         #lightpad1.start()
@@ -45,6 +49,8 @@ class Orchestrator(StateMachine):
         #self.motorDriver = MotorDriver(self.finished_paper_prep)
         self.deviceServer = DeviceServer(self)
         self.deviceServer.start()
+
+        self.orderHandler.get_open_orders()
 
     def on_enter_start(self):
         print('Measuring distance now! bsss bssss ')
@@ -110,6 +116,7 @@ class Orchestrator(StateMachine):
     def get_current_message(self):
 
         state_id = self.current_state.identifier
+        current_order = self.orderHandler.current_order
         message = {
             "state": state_id,
             "gift_width": self.sizeCalculator.gift_width,
@@ -117,6 +124,7 @@ class Orchestrator(StateMachine):
             "gift_depth": self.sizeCalculator.gift_depth,
             "paper_width": self.sizeCalculator.paper_width,
             "paper_height": self.sizeCalculator.paper_height,
+            "current_order": current_order
         }
         return str(message).replace("'",'"')
 

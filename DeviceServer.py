@@ -1,7 +1,7 @@
-from flask import Flask, request, Response
+from flask import Flask, request
 from flask_cors import CORS
 import threading
-
+import json
 class DeviceServer(threading.Thread):
 
     def __init__(self, orchestrator):
@@ -14,13 +14,12 @@ class DeviceServer(threading.Thread):
         def index():
             return "hola"
 
-
         @self.app.route('/lightpad', methods=["POST"])
         def lightpad_value_changed():
             id = int(request.form["id"])
             value = int(request.form["value"])
             self.orchestrator.handle_lightpad_change(id, value)
-            return Response({"status": 200}, mimetype='application/json')
+            return ""
 
         @self.app.route('/distance_sensor', methods=["POST"])
         def distance_sensor_value_changed():
@@ -51,13 +50,33 @@ class DeviceServer(threading.Thread):
                 self.orchestrator.paperLengthWatcher.finish()
             return ""
 
+        @self.app.route('/scale', methods=["POST"])
+        def scale_value_changed():
+            print(request.data)
+            id = int(request.form["id"])
+            value = request.form["value"]
+
+            print(str(id) + " " + value)
+            # TODO
+            return ""
+
         @self.app.route('/order', methods=["POST"])
         def on_new_order():
-            id = request.form["id"]
-            order_products = request.form["orderProducts"]
-            return Response({"status": 200}, mimetype='application/json')
-
+            data = json.loads(request.data)
+            print(data)
+            """
+            data: {
+                "id":1,
+                "orderProducts": {
+                    "paperStyle": "style_id",  
+                    "paper": "paper_id", 
+                    "band": ["band1_id", "band2_id"],
+                    "card": "card_id"
+                }
+            }"""
+            self.orchestrator.orderHandler.add_order(data)
+            return ""
 
     def run(self):
-        #for debug mode the flask server must run on the main thread
+        # for debug mode the flask server must run on the main thread
         self.app.run(debug=False, host='0.0.0.0')
