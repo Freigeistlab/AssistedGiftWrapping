@@ -1,11 +1,9 @@
 from statemachine import StateMachine, State, exceptions
 
 from DeviceServer import DeviceServer
-from LightPad import LightPad
-from MotorDriver import MotorDriver
 from GiftSizeCalculator import GiftSizeCalculator
 from OrderHandler import OrderHandler
-from PaperLengthWatcher import PaperLengthWatcher
+from PaperLengthController import PaperLengthController
 from WebSocket import WebSocket
 
 
@@ -39,7 +37,7 @@ class Orchestrator(StateMachine):
         # bluetooth_handler = BluetoothHandler()
         self.webSocket = WebSocket(self)
         self.webSocket.start()
-        self.paperLengthWatcher = PaperLengthWatcher(self.on_paper_teared)
+        self.paperLengthWatcher = PaperLengthController(self.on_paper_teared)
         self.sizeCalculator = GiftSizeCalculator(self.finished_size_calc)
         self.orderHandler = OrderHandler(self.new_order)
         #lightpad1 = LightPad(self.handle_lightpad_change, 1)
