@@ -1,4 +1,3 @@
-import requests
 #TODO: real number depending on rotary encoder
 from LedController import LedController
 
@@ -9,8 +8,8 @@ class PaperLengthController:
 
     def __init__(self, on_paper_pushed_out):
         self.on_paper_pushed_out = on_paper_pushed_out
-        self.reset()
         self.led = LedController("192.168.42.67", 5000)
+        self.reset()
 
     def set_paper_dimensions(self, width, length):
         self.paper_width = width

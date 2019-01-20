@@ -15,4 +15,4 @@ class LedController:
         rgb_ls = rgb.split(",")
         headers = {'Content-Type': 'application/x-www-form-urlencoded'}
         data = "r=" + rgb_ls[0] +"&g=" + rgb_ls[1] + "&b=" + rgb_ls[2]
-        requests.post('http://' + self.ip + ":" + self.port + '/', data=data, headers=headers)
+        # requests.post('http://' + self.ip + ":" + str(self.port) + '/', data=data, headers=headers)
