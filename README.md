@@ -23,6 +23,6 @@ The format in which orders should be sent is as follows:
 ```javascript
 	data: {
 		id: <id>,
-		orderItems: [<item1_id>, <item2_id>, <item3_id>, <item4_id>]
+		order_products: [<item1_product_id>, <item2_product_id>, <item3_product_id>, <item4_product_id>]
 	}
 ```
