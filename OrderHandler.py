@@ -13,7 +13,8 @@ class OrderHandler:
         self.conn = psycopg2.connect(dbname="wrapper_development", host="localhost", port=5432)
         # self.conn = psycopg2.connect("dbname=wrapper_production user=wrapper")
         self.cur = self.conn.cursor()
-        self.get_table_names()
+        #self.get_table_names()
+        #self.get_column_names("order_items")
 
     def get_open_orders(self):
         self.cur.execute("SELECT * FROM orders WHERE order_status_id = 2 ORDER BY created_at ASC")
@@ -40,10 +41,12 @@ class OrderHandler:
             self.conn.commit()
         if not self.orders.empty():
             self.current_order = self.orders.get_nowait()
-            order_item_ids = ["1","2","3","4"]
+            current_order_id = str(self.current_order[0])
+            #order_item_ids = ["1","2","3","4"]
 
-            # order_item_ids = self.current_order["orderProducts"]
-            order_item_ids_str = ",".join(order_item_ids)
+            order_item_ids = self.get_order_item_ids(current_order_id)
+
+            order_item_ids_str = ",".join([str(i[0]) for i in order_item_ids])
             #  WHERE id in (%s);" % order_item_ids_str
             current_order_items = {}
             self.cur.execute("SELECT p.name, p.image, pg.id, pg.name FROM products AS p, product_groups AS pg WHERE p.id in (%s) AND p.product_group_id = pg.id;" % order_item_ids_str)
@@ -61,7 +64,6 @@ class OrderHandler:
 
             self.current_order_items = current_order_items
 
-            current_order_id = str(self.current_order[0])
             self.cur.execute("UPDATE orders SET order_status_id = 2 WHERE id = %s ;", str(current_order_id))
             self.conn.commit()
             self.on_new_order()
@@ -70,8 +72,22 @@ class OrderHandler:
             self.current_order_items = None
             # put orchestrator to idle
 
+    def get_order_item_ids(self, order_id):
+        self.cur.execute("SELECT p.id FROM orders AS o, order_items AS oi, products AS p WHERE o.id= %s AND p.id = oi.product_id AND o.id = oi.order_id;", str(order_id) )
+        return self.cur.fetchall()
+
+
+
     def get_table_names(self):
         self.cur.execute("""SELECT table_name FROM information_schema.tables
                WHERE table_schema = 'public'""")
         for table in self.cur.fetchall():
             print(table)
+
+    def get_column_names(self, table):
+
+        self.cur.execute("""SELECT *
+FROM information_schema.columns
+WHERE table_name = '%s';""" % table)
+        for col in self.cur.fetchall():
+            print(col)
