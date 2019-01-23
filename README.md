@@ -17,3 +17,12 @@ This will incidentally also start the device and order server
 on localhost:5000 to which different IOT-devices can send their state.
 
 To see the current projections also open `Projections/index.html` in a Browser.
+
+The format in which orders should be sent is as follows:
+
+```javascript
+	data: {
+		id: <id>,
+		orderItems: [<item1_id>, <item2_id>, <item3_id>, <item4_id>]
+	}
+```
