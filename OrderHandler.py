@@ -53,14 +53,20 @@ class OrderHandler:
 
             # add new product groups here
             for item in self.cur.fetchall():
+                item_json = {
+                    "name": item[0],
+                    "image": "",
+                    "prod_group_id": item[2],
+                    "prod_group_name": item[3]
+                }
                 if item[2] == 1:
-                    current_order_items["packaging_style"] = item
+                    current_order_items["packaging_style"] = item_json
                 elif item[2] == 2:
-                    current_order_items["paper"] = item
+                    current_order_items["paper"] = item_json
                 elif item[2] == 3:
-                    current_order_items["band"] = item
+                    current_order_items["band"] = item_json
                 elif item[2] == 4:
-                    current_order_items["card"] = item
+                    current_order_items["card"] = item_json
 
             self.current_order_items = current_order_items
 

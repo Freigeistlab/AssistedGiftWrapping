@@ -1,3 +1,5 @@
+import json
+
 from statemachine import StateMachine, State, exceptions
 
 from DeviceServer import DeviceServer
@@ -114,7 +116,7 @@ class Orchestrator(StateMachine):
     def get_current_message(self):
 
         state_id = self.current_state.identifier
-        current_order = self.orderHandler.current_order
+        current_order = self.orderHandler.current_order_items
         message = {
             "state": state_id,
             "gift_width": self.sizeCalculator.gift_width,
