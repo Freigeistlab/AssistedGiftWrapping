@@ -1,4 +1,4 @@
-import json
+import sys, getopt
 
 from statemachine import StateMachine, State, exceptions
 
@@ -11,6 +11,17 @@ from AutoConnector import AutoConnector
 
 class Orchestrator(StateMachine):
     print("Started orchestrator")
+    fakeorder = False
+    testprojections = False
+    optlist, _ = getopt.getopt(sys.argv[1:], "", ["fakeorder=", "testprojections="])
+    print(optlist)
+    for o,a in optlist:
+        if o in ["--fakeorder"]:
+            fakeorder = True
+        elif o in ["--testprojections"]:
+            testprojections = True
+        else:
+            assert False, "unhandled option " + o
 
     devices = {}
 
@@ -23,6 +34,8 @@ class Orchestrator(StateMachine):
     paperLaidOut = State('PaperLaidOut')
     giftPlaced = State('GiftProjected')
     giftWrapped = State('GiftWrapped')
+    firstFold = State('FirstFold')
+    secondFold = State('SecondFold')
 
     # actions
     new_order = idle.to(waitingForGift)
@@ -35,6 +48,9 @@ class Orchestrator(StateMachine):
     lightpad2_darkened_completely = paperLaidOut.to(giftPlaced) # paper is laid out. now project the gift on top of the paper
     finish = giftPlaced.to(idle)
     next_order = giftPlaced.to(waitingForGift)
+    tape_teared = giftPlaced.to(firstFold) | firstFold.to(secondFold)
+
+    test_projection = idle.to(paperPrepared)
 
     def __init__(self):
         super().__init__()
@@ -47,7 +63,8 @@ class Orchestrator(StateMachine):
         self.webSocket.start()
         self.paperLengthWatcher = PaperLengthController(self.on_paper_teared)
         self.sizeCalculator = GiftSizeCalculator(self.finished_size_calc)
-        self.orderHandler = OrderHandler(self.new_order)
+
+
         #lightpad1 = LightPad(self.handle_lightpad_change, 1)
         #lightpad2 = LightPad(self.handle_lightpad_change, 2)
         #lightpad1.start()
@@ -56,7 +73,16 @@ class Orchestrator(StateMachine):
         self.deviceServer = DeviceServer(self)
         self.deviceServer.start()
 
-        self.orderHandler.get_open_orders()
+        if not self.fakeorder:
+            self.orderHandler = OrderHandler(self.new_order)
+            self.orderHandler.get_open_orders()
+        else:
+            if self.testprojections:
+                self.sizeCalculator.generate_mock_values()
+                self.test_projection()
+            else:
+                self.new_order()
+
 
     def on_enter_start(self):
         print('Measuring distance now! bsss bssss ')
@@ -95,7 +121,14 @@ class Orchestrator(StateMachine):
         # send message to ws to render arrow projection
         self.webSocket.send_current_state()
 
-    print("Sent current state")
+    def on_enter_firstFold(self):
+        print("first fold done")
+        self.webSocket.send_current_state()
+
+    def on_enter_secondFold(self):
+        print("second fold done")
+        self.webSocket.send_current_state()
+
 
     def handle_lightpad_change(self, id, value):
         try:
@@ -122,7 +155,10 @@ class Orchestrator(StateMachine):
     def get_current_message(self):
 
         state_id = self.current_state.identifier
-        current_order = self.orderHandler.current_order_items
+        if hasattr(self, 'orderHandler'):
+            current_order = self.orderHandler.current_order_items
+        else:
+            current_order = {}
         message = {
             "state": state_id,
             "gift_width": self.sizeCalculator.gift_width,

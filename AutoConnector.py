@@ -6,7 +6,7 @@ import requests
 
 class AutoConnector:
 
-	port = 4343
+	port = 43432
 	host_file_name = "./hosts.txt"
 	ip = socket.gethostbyname(socket.gethostname())
 	print("my ip: " + ip)
@@ -59,7 +59,8 @@ class AutoConnector:
 		for i in range(1,255):
 			foreign_ip = self.subnet_mask + str(i)
 			if self.ping(foreign_ip, self.port):
-				r = requests.get("http://" + foreign_ip + ":" + str(self.port) + "/")
-				devices[...] = foreign_ip
+				payload = {'ip': self.ip, 'port': 5000}
+				r = requests.post(foreign_ip + ":" + str(self.port) + "/", data=payload)
+				# devices[...] = foreign_ip
 		return devices
 

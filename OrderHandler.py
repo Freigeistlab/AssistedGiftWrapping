@@ -10,11 +10,17 @@ class OrderHandler:
 
     def __init__(self, on_new_order):
         self.on_new_order = on_new_order
-        self.conn = psycopg2.connect(dbname="wrapper_development", host="localhost", port=5432)
-        # self.conn = psycopg2.connect("dbname=wrapper_production user=wrapper")
-        self.cur = self.conn.cursor()
-        #self.get_table_names()
-        #self.get_column_names("order_items")
+        try:
+            self.conn = psycopg2.connect(dbname="wrapper_development", host="localhost", port=5432)
+            # self.conn = psycopg2.connect("dbname=wrapper_production user=wrapper")
+            self.cur = self.conn.cursor()
+            #self.get_table_names()
+            #self.get_column_names("order_items")
+        except psycopg2.OperationalError:
+            print("No db running. Please start the dashboard")
+            exit()
+
+
 
     def get_open_orders(self):
         self.cur.execute("SELECT * FROM orders WHERE order_status_id = 2 ORDER BY created_at ASC")

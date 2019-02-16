@@ -53,10 +53,10 @@ class DeviceServer(threading.Thread):
         @self.app.route('/scale', methods=["POST"])
         def scale_value_changed():
             print(request.data)
-            id = int(request.form["id"])
-            value = request.form["value"]
-
-            print(str(id) + " " + value)
+            #id = int(request.form["id"])
+            #value = request.form["value"]
+            self.orchestrator.tape_teared()
+            #print(str(id) + " " + value)
             # TODO
             return ""
 
