@@ -7,10 +7,12 @@ from GiftSizeCalculator import GiftSizeCalculator
 from OrderHandler import OrderHandler
 from PaperLengthController import PaperLengthController
 from WebSocket import WebSocket
-
+from AutoConnector import AutoConnector
 
 class Orchestrator(StateMachine):
     print("Started orchestrator")
+
+    devices = {}
 
     # states
     idle = State('Idle', initial=True)
@@ -36,6 +38,10 @@ class Orchestrator(StateMachine):
 
     def __init__(self):
         super().__init__()
+        self.autoConnector = AutoConnector()
+        # blocking call
+        devices = self.autoConnector.find_all_devices()
+
         # bluetooth_handler = BluetoothHandler()
         self.webSocket = WebSocket(self)
         self.webSocket.start()
