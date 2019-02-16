@@ -25,10 +25,15 @@ class GiftSizeCalculator(Thread):
         self.gift_depth = depth
 
     def generate_mock_values(self):
+        """dimensions = {
+            "width": randint(30, 40),
+            "height": randint(15,22),
+            "depth": randint(10,18),
+        }"""
         dimensions = {
-            "width": randint(15, 40),
-            "height": randint(8,22),
-            "depth": randint(5,18),
+            "width": 30,
+            "height": 15,
+            "depth": 6,
         }
         dimensions = sorted(dimensions.items(), key=operator.itemgetter(1))
         print(dimensions)
@@ -44,7 +49,7 @@ class GiftSizeCalculator(Thread):
         else:
             # gift is too wide
             # check if it is also too high --> if so, we cannot pack this gift
-            if self.gift_height + (2 * self.gift_depth) <= self.paper_width:
+            if self.gift_height + (2 * self.gift_depth) > self.paper_width:
                 print("Gift is too big")
                 exit()
             else:
