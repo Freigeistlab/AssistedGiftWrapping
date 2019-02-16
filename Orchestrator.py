@@ -61,7 +61,7 @@ class Orchestrator(StateMachine):
         # bluetooth_handler = BluetoothHandler()
         self.webSocket = WebSocket(self)
         self.webSocket.start()
-        self.paperLengthWatcher = PaperLengthController(self.on_paper_teared)
+        self.paperLengthWatcher = PaperLengthController(self.on_paper_teared, self)
         self.sizeCalculator = GiftSizeCalculator(self.finished_size_calc)
 
 
@@ -82,7 +82,6 @@ class Orchestrator(StateMachine):
                 self.test_projection()
             else:
                 self.new_order()
-
 
     def on_enter_start(self):
         print('Measuring distance now! bsss bssss ')
@@ -172,6 +171,11 @@ class Orchestrator(StateMachine):
             "current_order": current_order
         }
         return str(message).replace("'",'"')
+
+    def update_devices(self, devices):
+        self.devices = devices
+        # update all components that need to know the new units
+        self.paperLengthWatcher.device_update(devices)
 
 
 if __name__ == "__main__":

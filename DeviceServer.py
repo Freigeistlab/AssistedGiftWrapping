@@ -48,9 +48,11 @@ class DeviceServer(threading.Thread):
                 self.orchestrator.paperLengthWatcher.new_encoder_value(value)
             return ""
 
-        @self.app.route('/button', methods=["POST"])
+        @self.app.route('/ButtonUnit', methods=["POST"])
         def button_clicked():
-            id = int(request.form["id"])
+            id = request.form["ID"]
+            value = request.form["value"]
+            print("[BUTTON UNIT] " + str(id) + ":" + str(value))
             # id of the wrapping paper button
             if id == 0:
                 self.orchestrator.paperLengthWatcher.finish()
@@ -62,11 +64,7 @@ class DeviceServer(threading.Thread):
             mode = request.form["mode"]
             value = request.form["value"]
             print("[SCALE] " + str(id) + ":" + str(value))
-            #id = int(request.form["id"])
-            #value = request.form["value"]
             self.orchestrator.tape_teared()
-            #print(str(id) + " " + value)
-            # TODO
             return ""
 
         @self.app.route('/order', methods=["POST"])

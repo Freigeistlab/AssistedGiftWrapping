@@ -43,7 +43,9 @@ class AutoConnector(Thread):
 		#print(hosts)
 		#print("hosts")
 		devices = self.port_scan()
+		print(devices)
 		#self.orchestrator.devices = devices
+		self.orchestrator.update_devices(devices)
 
 	def get_devices_from_hosts(self):
 		devices = {}
@@ -60,7 +62,6 @@ class AutoConnector(Thread):
 			print("File doesn't exist")
 		return devices
 
-
 	def port_scan(self):
 		devices = {}
 		me = self.ip_parts[3]
@@ -71,9 +72,9 @@ class AutoConnector(Thread):
 			print("ping to " + foreign_ip)
 			if self.ping(foreign_ip, self.port):
 				print("Open connection " + foreign_ip)
-
 				r = requests.post("http://" + foreign_ip + ":" + str(self.port) + "/", data=payload)
-				print(r)
+				device_name = r.content.decode("utf-8")
+				devices[device_name] = foreign_ip
 		print("Finished port scan")
 
 				# devices[...] = foreign_ip

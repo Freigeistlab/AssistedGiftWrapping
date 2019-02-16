@@ -8,9 +8,20 @@ class PaperLengthController:
 
     def __init__(self, on_paper_pushed_out, orchestrator):
         self.on_paper_pushed_out = on_paper_pushed_out
-        led_ip = orchestrator.devices["led:0"]
+        if "led:0" in orchestrator.devices:
+            led_ip = orchestrator.devices["led:0"]
+        else:
+            led_ip = None
+
         self.led = LedController(led_ip, 43432)
         self.reset()
+
+    def device_update(self, devices):
+        if "led:0" in devices:
+            led_ip = devices["led:0"]
+            self.led.ip = led_ip
+            print("Updated LED IP")
+
 
     def set_paper_dimensions(self, width, length):
         self.paper_width = width
@@ -29,7 +40,8 @@ class PaperLengthController:
         self.min_paper_length = -1
         self.max_paper_length = -1
         self.current_paper_length = -1
-        self.led.set_rgb("255,0,0")
+        if self.led is not None:
+            self.led.set_rgb("255,0,0")
 
     def finish(self):
         if self.active:
