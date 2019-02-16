@@ -54,9 +54,9 @@ class Orchestrator(StateMachine):
 
     def __init__(self):
         super().__init__()
-        self.autoConnector = AutoConnector()
+        self.autoConnector = AutoConnector(self)
         # blocking call
-        devices = self.autoConnector.find_all_devices()
+        self.autoConnector.start()
 
         # bluetooth_handler = BluetoothHandler()
         self.webSocket = WebSocket(self)
@@ -129,7 +129,6 @@ class Orchestrator(StateMachine):
         print("second fold done")
         self.webSocket.send_current_state()
 
-
     def handle_lightpad_change(self, id, value):
         try:
             if value < 5:
@@ -148,6 +147,10 @@ class Orchestrator(StateMachine):
         except exceptions.TransitionNotAllowed:
             #print("Transition not allowed")
             print(self.current_state)
+
+    def on_enter_sizeCalculated(self):
+        print("size calculated")
+        self.webSocket.send_current_state()
 
     def on_paper_teared(self, paper_length):
         self.finished_paper_prep()

@@ -3,8 +3,9 @@ import socket
 import os
 import re 
 import requests
+from threading import Thread
 
-class AutoConnector:
+class AutoConnector(Thread):
 
 	port = 43432
 	host_file_name = "./hosts.txt"
@@ -14,27 +15,35 @@ class AutoConnector:
 	subnet_mask = ip_parts[0] + "." + ip_parts[1] + "." + ip_parts[2] + "."
 	pattern = re.escape(subnet_mask) + r"*"
 
+	def __init__(self, orchestrator):
+		super().__init__()
+		self.orchestrator = orchestrator
+
+
 	def ping(self, addr, port):
 
 		#creates a new socket using the given address family.
 		socket_obj = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 
 		#setting up the default timeout in seconds for new socket object
-		socket.setdefaulttimeout(0.001)
+		socket.setdefaulttimeout(0.1)
 
 		#returns 0 if connection succeeds else raises error
 		result = socket_obj.connect_ex((addr,port)) #address and port in the tuple format
-		print(addr)
-		print(result)
 		#closes te object
+
 		socket_obj.close()
+
 		return result == 0
 
-	def find_all_devices(self):
+	def run(self):
+		print("Started auto connector")
+		print("searching for devices")
 		#hosts = get_devices_from_hosts()
 		#print(hosts)
 		#print("hosts")
-		return self.port_scan()
+		devices = self.port_scan()
+		#self.orchestrator.devices = devices
 
 	def get_devices_from_hosts(self):
 		devices = {}
@@ -58,9 +67,15 @@ class AutoConnector:
 		#ping(subnet_mask + str(100), port)
 		for i in range(1,255):
 			foreign_ip = self.subnet_mask + str(i)
+			payload = {'ip': self.ip, 'port': 5000}
+			print("ping to " + foreign_ip)
 			if self.ping(foreign_ip, self.port):
-				payload = {'ip': self.ip, 'port': 5000}
-				r = requests.post(foreign_ip + ":" + str(self.port) + "/", data=payload)
+				print("Open connection " + foreign_ip)
+
+				r = requests.post("http://" + foreign_ip + ":" + str(self.port) + "/", data=payload)
+				print(r)
+		print("Finished port scan")
+
 				# devices[...] = foreign_ip
 		return devices
 

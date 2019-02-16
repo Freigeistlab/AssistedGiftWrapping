@@ -19,6 +19,9 @@ ws.onmessage = function (event) {
   const { paper_width, paper_height, gift_width, gift_height, gift_depth } = json;
   checkIfLandscape(gift_width, gift_height);
   switch (json.state) {
+    case "sizeCalculated":
+      showInstructions("Bitte Papier heraus ziehen")
+      break;
     case "paperPrepared":
       renderPaperFrame(paper_width * cmInPixels, paper_height * cmInPixels);
       break;
@@ -36,6 +39,10 @@ ws.onmessage = function (event) {
       break;
   }
 };
+
+function showInstructions(text){
+  $("#instructions").text(text).css({visibility: "visible"});
+}
 
 function renderPaperFrame(width, height){
 
@@ -154,6 +161,7 @@ function hideAll(){
   $(".diagonalIndicator").css({visibility: "hidden"});
   $("#paperFrame").css({visibility: "hidden"});
   $("#giftOnPaper").css({visibility: "hidden"});
+  $("#instructions").css({visibility: "hidden"});
 }
 
 

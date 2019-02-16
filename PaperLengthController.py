@@ -6,9 +6,10 @@ amount_of_steps_per_cm = 10
 
 class PaperLengthController:
 
-    def __init__(self, on_paper_pushed_out):
+    def __init__(self, on_paper_pushed_out, orchestrator):
         self.on_paper_pushed_out = on_paper_pushed_out
-        self.led = LedController("192.168.42.67", 5000)
+        led_ip = orchestrator.devices["led:0"]
+        self.led = LedController(led_ip, 43432)
         self.reset()
 
     def set_paper_dimensions(self, width, length):

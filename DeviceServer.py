@@ -14,17 +14,21 @@ class DeviceServer(threading.Thread):
         def index():
             return "hola"
 
-        @self.app.route('/lightpad', methods=["POST"])
+        @self.app.route('/LightSenseUnit', methods=["POST"])
         def lightpad_value_changed():
-            id = int(request.form["id"])
+            id = int(request.form["ID"])
+            mode = int(request.form["mode"])
             value = int(request.form["value"])
+            print("[LIGHTPAD] " + str(id) + ":" + str(value))
             self.orchestrator.handle_lightpad_change(id, value)
             return ""
 
-        @self.app.route('/distance_sensor', methods=["POST"])
+        @self.app.route('/DistanceUnit', methods=["POST"])
         def distance_sensor_value_changed():
-            id = request.form["id"]
+            id = request.form["ID"]
+            mode = request.form["mode"]
             value = request.form["value"]
+            print("[DISTANCE UNIT] " + str(id) + ":" + str(value))
             if id == 0:
                 self.orchestrator.sizeCalculator.set_width(value)
             if id == 1:
@@ -33,10 +37,12 @@ class DeviceServer(threading.Thread):
                 self.orchestrator.sizeCalculator.set_depth(value)
             return ""
 
-        @self.app.route('/rotary_encoder', methods=["POST"])
+        @self.app.route('/EncoderUnit', methods=["POST"])
         def rotary_encoder_value_changed():
-            id = int(request.form["id"])
-            value = int(request.form["value"])
+            id = request.form["ID"]
+            mode = request.form["mode"]
+            value = request.form["value"]
+            print("[ENCODER UNIT] " + str(id) + ":" + str(value))
             # id of the wrapping paper encoder
             if id == 0:
                 self.orchestrator.paperLengthWatcher.new_encoder_value(value)
@@ -50,9 +56,12 @@ class DeviceServer(threading.Thread):
                 self.orchestrator.paperLengthWatcher.finish()
             return ""
 
-        @self.app.route('/scale', methods=["POST"])
+        @self.app.route('/ScaleUnit', methods=["POST"])
         def scale_value_changed():
-            print(request.data)
+            id = request.form["ID"]
+            mode = request.form["mode"]
+            value = request.form["value"]
+            print("[SCALE] " + str(id) + ":" + str(value))
             #id = int(request.form["id"])
             #value = request.form["value"]
             self.orchestrator.tape_teared()
