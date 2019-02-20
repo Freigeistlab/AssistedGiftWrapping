@@ -43,9 +43,11 @@ class Orchestrator(StateMachine):
     lightpad1_lightened_up = start.to(idle) # when gift was removed from corner
     finished_size_calc = start.to(sizeCalculated) # when size was calculated continue with preparing paper
     finished_paper_prep = sizeCalculated.to(paperPrepared) # paper is prepared. now project the paper on the table
-    lightpad2_darkened_little = paperPrepared.to(paperLaidOut) | giftPlaced.to(paperLaidOut) # paper is laid out (lightpad2 is semi-bright). now project the gift on top of the paper
+    lightpad2_darkened = paperPrepared.to(paperLaidOut) # paper is laid out (lightpad2 is semi-bright). now project the gift on top of the paper
     lightpad2_lightened_up = paperLaidOut.to(paperPrepared)
-    lightpad2_darkened_completely = paperLaidOut.to(giftPlaced) # paper is laid out. now project the gift on top of the paper
+    gift_placed = paperLaidOut.to(giftPlaced)
+    gift_removed = giftPlaced.to(paperLaidOut)
+    #lightpad2_darkened_completely = paperLaidOut.to(giftPlaced) # paper is laid out. now project the gift on top of the paper
     finish = giftPlaced.to(idle)
     next_order = giftPlaced.to(waitingForGift)
     tape_teared = giftPlaced.to(firstFold) | firstFold.to(secondFold)
@@ -92,6 +94,7 @@ class Orchestrator(StateMachine):
 
     def on_enter_sizeCalculated(self):
         print('Size calculated - watching the paper now')
+        self.webSocket.send_current_state()
         #self.motorDriver.set_paper_length(self.sizeCalculator.paper_width)
         #self.motorDriver.start()
         self.paperLengthWatcher.set_paper_dimensions(self.sizeCalculator.paper_width,self.sizeCalculator.paper_height)
@@ -130,26 +133,20 @@ class Orchestrator(StateMachine):
 
     def handle_lightpad_change(self, id, value):
         try:
-            if value < 5:
-                if id == 1:
+            if value == 0:
+                if id == 0:
                     self.lightpad1_darkened()
-                elif id == 2:
-                    self.lightpad2_darkened_completely()
-            elif 5 <= value < 25:
-                if id == 2:
-                    self.lightpad2_darkened_little()
+                elif id == 1:
+                    self.lightpad2_darkened()
             else:
-                if id == 1:
+                if id == 0:
                     self.lightpad1_lightened_up()
-                elif id == 2:
+                elif id == 1:
                     self.lightpad2_lightened_up()
         except exceptions.TransitionNotAllowed:
+            pass
             #print("Transition not allowed")
-            print(self.current_state)
-
-    def on_enter_sizeCalculated(self):
-        print("size calculated")
-        self.webSocket.send_current_state()
+            #print(self.current_state)
 
     def on_paper_teared(self, paper_length):
         self.finished_paper_prep()

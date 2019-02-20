@@ -46,6 +46,7 @@ class AutoConnector(Thread):
 		print(devices)
 		#self.orchestrator.devices = devices
 		self.orchestrator.update_devices(devices)
+		return
 
 	def get_devices_from_hosts(self):
 		devices = {}

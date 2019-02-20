@@ -37,6 +37,9 @@ ws.onmessage = function (event) {
     case "secondFold":
       renderThirdFold(paper_width * cmInPixels, paper_height * cmInPixels, gift_width * cmInPixels, gift_height * cmInPixels, gift_depth * cmInPixels);
       break;
+    default:
+      hideAll();
+      break;
   }
 };
 

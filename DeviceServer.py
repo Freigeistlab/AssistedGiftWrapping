@@ -2,6 +2,8 @@ from flask import Flask, request
 from flask_cors import CORS
 import threading
 import json
+from statemachine import exceptions
+
 class DeviceServer(threading.Thread):
 
     def __init__(self, orchestrator):
@@ -25,9 +27,9 @@ class DeviceServer(threading.Thread):
 
         @self.app.route('/DistanceUnit', methods=["POST"])
         def distance_sensor_value_changed():
-            id = request.form["ID"]
+            id = int(request.form["ID"])
             mode = request.form["mode"]
-            value = request.form["value"]
+            value = float(request.form["value"])
             print("[DISTANCE UNIT] " + str(id) + ":" + str(value))
             if id == 0:
                 self.orchestrator.sizeCalculator.set_width(value)
@@ -35,13 +37,24 @@ class DeviceServer(threading.Thread):
                 self.orchestrator.sizeCalculator.set_height(value)
             if id == 2:
                 self.orchestrator.sizeCalculator.set_depth(value)
+            if id == 3:
+                # TODO
+                try:
+                    if self.orchestrator.sizeCalculator.gift_depth != -1:
+                        if self.orchestrator.sizeCalculator.gift_depth -2 <= value <= self.orchestrator.sizeCalculator.gift_depth +2:
+                            print("gift is placed")
+                            self.orchestrator.gift_placed()
+                        else:
+                            self.orchestrator.gift_removed()
+                except exceptions.TransitionNotAllowed:
+                    pass
             return ""
 
         @self.app.route('/EncoderUnit', methods=["POST"])
         def rotary_encoder_value_changed():
-            id = request.form["ID"]
+            id = int(request.form["ID"])
             mode = request.form["mode"]
-            value = request.form["value"]
+            value = float(request.form["value"])
             print("[ENCODER UNIT] " + str(id) + ":" + str(value))
             # id of the wrapping paper encoder
             if id == 0:
@@ -50,7 +63,7 @@ class DeviceServer(threading.Thread):
 
         @self.app.route('/ButtonUnit', methods=["POST"])
         def button_clicked():
-            id = request.form["ID"]
+            id = int(request.form["ID"])
             value = request.form["value"]
             print("[BUTTON UNIT] " + str(id) + ":" + str(value))
             # id of the wrapping paper button
@@ -87,3 +100,4 @@ class DeviceServer(threading.Thread):
     def run(self):
         # for debug mode the flask server must run on the main thread
         self.app.run(debug=False, host='0.0.0.0')
+        return

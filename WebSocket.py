@@ -14,12 +14,9 @@ class WebSocket(Thread):
 
     async def serve(self, websocket, path):
         await self.register(websocket)
-        try:
-            await self.send_message(self.orchestrator.get_current_message())
-            while True:
-                pass
-        finally:
-            await self.unregister(websocket)
+        await self.send_message(self.orchestrator.get_current_message())
+        while True:
+            await asyncio.sleep(0.1)
 
     async def register(self, websocket):
 
@@ -52,3 +49,4 @@ class WebSocket(Thread):
         ws = websockets.serve(self.serve, '', 5678)
         self.ws_loop.run_until_complete(ws)
         self.ws_loop.run_forever()
+        return

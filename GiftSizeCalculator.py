@@ -1,5 +1,4 @@
 from threading import Thread
-from random import randint
 import time
 import operator
 
@@ -76,3 +75,4 @@ class GiftSizeCalculator(Thread):
                 self.paper_height = self.gift_height * 2 + self.gift_depth * 2 + 2 * self.paper_overlap
 
         self.on_size_calculated()
+        return

@@ -11,9 +11,9 @@ class LedController:
         self.set_rgb(rgb)
 
     def set_rgb(self, rgb, index=None):
-        if self.ip is None:
-            print("Led is not yet configured")
-        else:
+        try:
+
+            print("Setting RGB")
             self.rgb = rgb
             rgb_ls = rgb.split(",")
 
@@ -23,6 +23,8 @@ class LedController:
                 print("index not none")
                 data += "&index=" + str(index)
             requests.post('http://' + self.ip + ":" + str(self.port) + '/set', data=data, headers=headers)
+        except Exception as e:
+            print("LED is not configured")
 
 """c = LedController("192.168.0.121", 43432)
 c.set_rgb("255,255,0", 0)

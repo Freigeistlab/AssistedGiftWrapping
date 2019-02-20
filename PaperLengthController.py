@@ -3,13 +3,14 @@ from LedController import LedController
 
 amount_of_steps_per_cm = 10
 
+led_unit_name = "LedUnit0"
 
 class PaperLengthController:
 
     def __init__(self, on_paper_pushed_out, orchestrator):
         self.on_paper_pushed_out = on_paper_pushed_out
-        if "led:0" in orchestrator.devices:
-            led_ip = orchestrator.devices["led:0"]
+        if led_unit_name in orchestrator.devices:
+            led_ip = orchestrator.devices[led_unit_name]
         else:
             led_ip = None
 
@@ -17,11 +18,11 @@ class PaperLengthController:
         self.reset()
 
     def device_update(self, devices):
-        if "led:0" in devices:
-            led_ip = devices["led:0"]
+        if led_unit_name in devices:
+            led_ip = devices[led_unit_name]
             self.led.ip = led_ip
+            self.led.set_rgb("255,0,0")
             print("Updated LED IP")
-
 
     def set_paper_dimensions(self, width, length):
         self.paper_width = width
