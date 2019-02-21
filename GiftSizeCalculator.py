@@ -72,14 +72,15 @@ class GiftSizeCalculator:
             self.led.set_rgb("0,0,0")
             # set LEDs to black
         else:
-            self.led.set_rgb("0,255,0",led_id)
-            if led_id != 2:
-                t_next = Timer(1.0, self.timer, (w, h, d,led_id+1))
-                t_next.start()
-            else:
-                print("Woop woop, size measured!")
-                self.active = False
-                self.calc_dimensions(w,h,d)
+            if self.active:
+                self.led.set_rgb("0,255,0",led_id)
+                if led_id != 2:
+                    t_next = Timer(1.0, self.timer, (w, h, d,led_id+1))
+                    t_next.start()
+                else:
+                    print("Woop woop, size measured!")
+                    self.active = False
+                    self.calc_dimensions(w,h,d)
         return
 
     def check_dimensions(self):

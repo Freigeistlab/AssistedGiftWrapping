@@ -20,7 +20,6 @@ class LedController:
             headers = {'Content-Type': 'application/x-www-form-urlencoded'}
             data = "r=" + rgb_ls[0] +"&g=" + rgb_ls[1] + "&b=" + rgb_ls[2]
             if index is not None:
-                print("index not none")
                 data += "&index=" + str(index)
             requests.post('http://' + self.ip + ":" + str(self.port) + '/set', data=data, headers=headers)
         except Exception as e:

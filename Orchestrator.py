@@ -182,7 +182,7 @@ class Orchestrator(StateMachine):
         return str(message).replace("'",'"')
 
     def update_devices(self, devices):
-        self.devices = devices
+        self.devices = {**self.devices, **devices}
 
         if led_unit_name in devices:
             led_ip = devices[led_unit_name]
