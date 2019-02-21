@@ -3,26 +3,14 @@ from LedController import LedController
 
 amount_of_steps_per_cm = 10
 
-led_unit_name = "LedUnit0"
 
 class PaperLengthController:
 
     in_range = False
     def __init__(self, orchestrator):
         self.orchestrator = orchestrator
-        if led_unit_name in orchestrator.devices:
-            led_ip = orchestrator.devices[led_unit_name]
-        else:
-            led_ip = None
-        self.led = LedController(led_ip, 43432)
+        self.led = orchestrator.led
         self.reset()
-
-    def device_update(self, devices):
-        if led_unit_name in devices:
-            led_ip = devices[led_unit_name]
-            self.led.ip = led_ip
-            self.led.set_rgb("255,0,0")
-            print("Updated LED IP")
 
     def set_paper_dimensions(self, length):
         #TODO: define max_paper_length differently

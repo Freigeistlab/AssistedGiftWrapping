@@ -4,10 +4,14 @@ from statemachine import StateMachine, State, exceptions
 
 from DeviceServer import DeviceServer
 from GiftSizeCalculator import GiftSizeCalculator
+from LedController import LedController
 from OrderHandler import OrderHandler
 from PaperLengthController import PaperLengthController
 from WebSocket import WebSocket
 from AutoConnector import AutoConnector
+
+led_unit_name = "LedUnit0"
+
 
 class Orchestrator(StateMachine):
     print("Started orchestrator")
@@ -39,9 +43,9 @@ class Orchestrator(StateMachine):
     secondFold = State('SecondFold')
 
     # actions
-    new_order = idle.to(waitingForGift)
-    lightpad1_darkened = waitingForGift.to(start) # when gift was placed on lightpad 1 (in the corner)
-    lightpad1_lightened_up = start.to(waitingForGift) # when gift was removed from corner
+    new_order = idle.to(start)
+    #lightpad1_darkened = waitingForGift.to(start) # when gift was placed on lightpad 1 (in the corner)
+    #lightpad1_lightened_up = start.to(waitingForGift) # when gift was removed from corner
     finished_size_calc = start.to(sizeCalculated) # when size was calculated continue with preparing paper
     finished_paper_prep = sizeCalculated.to(paperPrepared) # paper is prepared. now project the paper on the table
     paper_not_prepared = paperPrepared.to(sizeCalculated) # paper is not in range anymore
@@ -62,13 +66,13 @@ class Orchestrator(StateMachine):
         self.autoConnector = AutoConnector(self)
         # blocking call
         self.autoConnector.start()
+        self.led = LedController(None, 43432)
 
         # bluetooth_handler = BluetoothHandler()
         self.webSocket = WebSocket(self)
         self.webSocket.start()
         self.paperLengthWatcher = PaperLengthController(self)
-        self.sizeCalculator = GiftSizeCalculator(self.finished_size_calc)
-
+        self.sizeCalculator = GiftSizeCalculator(self.finished_size_calc, self.led)
 
         #lightpad1 = LightPad(self.handle_lightpad_change, 1)
         #lightpad2 = LightPad(self.handle_lightpad_change, 2)
@@ -95,8 +99,8 @@ class Orchestrator(StateMachine):
         self.webSocket.send_current_state()
 
     def on_enter_start(self):
-        print('Measuring distance now! bsss bssss ')
-        self.sizeCalculator.start()
+        print('New Order')
+        self.sizeCalculator.active = True
 
     def on_enter_sizeCalculated(self):
         print('Size calculated - watching the paper now')
@@ -144,12 +148,14 @@ class Orchestrator(StateMachine):
         try:
             if value == 0:
                 if id == 0:
-                    self.lightpad1_darkened()
+                    pass
+                    #self.lightpad1_darkened()
                 elif id == 1:
                     self.moved_knife_back()
             else:
                 if id == 0:
-                    self.lightpad1_lightened_up()
+                    pass
+                    # self.lightpad1_lightened_up()
                 elif id == 1:
                     self.cut_paper_off()
         except exceptions.TransitionNotAllowed:
@@ -177,8 +183,12 @@ class Orchestrator(StateMachine):
 
     def update_devices(self, devices):
         self.devices = devices
-        # update all components that need to know the new units
-        self.paperLengthWatcher.device_update(devices)
+
+        if led_unit_name in devices:
+            led_ip = devices[led_unit_name]
+            self.led.ip = led_ip
+            self.led.set_rgb("255,0,0")
+            print("Updated LED IP")
 
 
 if __name__ == "__main__":

@@ -31,12 +31,12 @@ class DeviceServer(threading.Thread):
             mode = request.form["mode"]
             value = float(request.form["value"])
             print("[DISTANCE UNIT] " + str(id) + ":" + str(value))
-            """if id == 0:
+            if id == 0:
                 self.orchestrator.sizeCalculator.set_depth(value)
             if id == 1:
                 self.orchestrator.sizeCalculator.set_width(value)
             if id == 2:
-                self.orchestrator.sizeCalculator.set_height(value)"""
+                self.orchestrator.sizeCalculator.set_height(value)
             if id == 3:
                 try:
                     if self.orchestrator.sizeCalculator.gift_depth != -1:
