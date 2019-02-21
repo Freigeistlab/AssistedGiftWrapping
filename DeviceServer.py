@@ -38,7 +38,7 @@ class DeviceServer(threading.Thread):
             if id == 2:
                 self.orchestrator.sizeCalculator.set_height(value)
             if id == 3:
-                try:
+                """try:
                     if self.orchestrator.sizeCalculator.gift_depth != -1:
                         if self.orchestrator.sizeCalculator.gift_depth -2 <= value <= self.orchestrator.sizeCalculator.gift_depth +2:
                             print("gift is placed")
@@ -46,7 +46,8 @@ class DeviceServer(threading.Thread):
                         else:
                             self.orchestrator.gift_removed()
                 except exceptions.TransitionNotAllowed:
-                    pass
+                    pass"""
+                self.orchestrator.sizeCalculator.set_distance_to_gift(value)
             return ""
 
         @self.app.route('/EncoderUnit', methods=["POST"])
@@ -77,7 +78,7 @@ class DeviceServer(threading.Thread):
             mode = request.form["mode"]
             value = float(request.form["value"])
             print("[SCALE] " + str(id) + ":" + str(value))
-            if value >= 10:
+            if value <= -10:
                 print("Tape teared")
                 self.orchestrator.tape_teared()
             return ""

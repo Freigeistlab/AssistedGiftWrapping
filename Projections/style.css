@@ -6,7 +6,6 @@ body {
 
 #paperFrame {
     visibility: hidden;
-    background-image: url("img/papier_weiss_rot.jpg");
     border: black;
     border-style: dashed;
     border-width: 4px;

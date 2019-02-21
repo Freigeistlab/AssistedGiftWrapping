@@ -5,24 +5,37 @@ import operator
 width_sensor_dist = 35
 height_sensor_dist = 58
 depth_sensor_dist = 51
-
+gift_present_sensor_dist = 80
 noise = 2
 
 
 class GiftSizeCalculator:
 
-    def __init__(self, on_size_calculated, led):
+    def __init__(self, on_size_calculated, gift_placed, led):
         self.on_size_calculated = on_size_calculated
+        self.gift_placed = gift_placed
         self.gift_width = -1
         self.gift_height = -1
         self.gift_depth = -1
+        self.gift_distance = -1
         self.paper_width = 50
         self.paper_height = -1
         self.paper_overlap = 3 # how many cms the wrapping paper needs to overlap for the gift
         self.finished = False
         self.measuring = False
         self.active = False
+        self.dist_active = False
         self.led = led
+
+    def generate_mock_values(self):
+        print("Generating mocks")
+        self.gift_width = 30
+        self.gift_height = 20
+        self.gift_depth = 10
+        """self.active = True
+        self.set_width(9)
+        self.set_height(39)
+        self.set_depth(53)"""
 
     def set_width(self, w):
         if self.active:
@@ -57,15 +70,17 @@ class GiftSizeCalculator:
                 self.gift_depth = depth
                 self.check_dimensions()
 
-    def generate_mock_values(self):
-        print("Generating mocks")
-        self.gift_width = 30
-        self.gift_height = 20
-        self.gift_depth = 10
-        """self.active = True
-        self.set_width(9)
-        self.set_height(39)
-        self.set_depth(53)"""
+    def set_distance_to_gift(self, dist):
+        if self.dist_active:
+            if gift_present_sensor_dist - noise <= dist <= gift_present_sensor_dist + noise:
+                self.gift_distance = -1
+                # initial value
+            else:
+                dist = gift_present_sensor_dist - dist
+                print("gift distance: " + str(dist))
+                self.gift_distance = dist
+                t1 = Timer(1.0, self.timer_dist, (dist,0))
+                t1.start()
 
     def timer(self, w, h, d, led_id):
         if w != self.gift_width or h != self.gift_height or d != self. gift_depth:
@@ -81,6 +96,21 @@ class GiftSizeCalculator:
                     print("Woop woop, size measured!")
                     self.active = False
                     self.calc_dimensions(w,h,d)
+        return
+
+    def timer_dist(self, dist, led_id):
+        if dist != self.gift_distance:
+            self.led.set_rgb("0,0,0")
+        else:
+            if self.dist_active:
+                self.led.set_rgb("0,255,0",led_id)
+                if led_id != 2:
+                    t_next = Timer(1.0, self.timer_dist, (dist,led_id+1))
+                    t_next.start()
+                else:
+                    print("Woop woop, gift placed!")
+                    self.dist_active = False
+                    self.gift_placed()
         return
 
     def check_dimensions(self):
@@ -124,17 +154,3 @@ class GiftSizeCalculator:
 
         self.on_size_calculated()
         return
-"""
-    def run(self):
-
-        self.generate_mock_values()
-        while not self.finished:
-            if not self.measuring:
-                while (self.gift_width == -1 or self.gift_height == -1 or self.gift_depth == -1):
-                    time.sleep(0.1)
-                t1 = Timer(1.0, self.timer, (self.gift_width, self.gift_height, self.gift_depth,0))
-                t1.start()
-                self.measuring = True
-
-"""
-

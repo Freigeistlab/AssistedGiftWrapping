@@ -57,22 +57,22 @@ class Orchestrator(StateMachine):
     #lightpad2_darkened_completely = paperLaidOut.to(giftPlaced) # paper is laid out. now project the gift on top of the paper
     finish = giftPlaced.to(idle)
     next_order = giftPlaced.to(waitingForGift)
-    tape_teared = giftPlaced.to(firstFold) | firstFold.to(secondFold)
+    tape_teared = giftPlaced.to(firstFold) | firstFold.to(secondFold) | secondFold.to(start)
 
     test_projection = idle.to(paperPrepared)
 
     def __init__(self):
         super().__init__()
+        self.led = LedController(None, 43432)
         self.autoConnector = AutoConnector(self)
         # blocking call
         self.autoConnector.start()
-        self.led = LedController(None, 43432)
 
         # bluetooth_handler = BluetoothHandler()
         self.webSocket = WebSocket(self)
         self.webSocket.start()
         self.paperLengthWatcher = PaperLengthController(self)
-        self.sizeCalculator = GiftSizeCalculator(self.finished_size_calc, self.led)
+        self.sizeCalculator = GiftSizeCalculator(self.finished_size_calc, self.gift_placed, self.led)
 
         #lightpad1 = LightPad(self.handle_lightpad_change, 1)
         #lightpad2 = LightPad(self.handle_lightpad_change, 2)
@@ -122,7 +122,7 @@ class Orchestrator(StateMachine):
     def on_enter_knifeMovedBack(self):
         print('Knife moved back')
         self.webSocket.send_current_state()
-
+        self.sizeCalculator.dist_active = True
 
     def on_enter_giftPlaced(self):
         print('Project the arrows onto the paper')

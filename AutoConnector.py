@@ -40,10 +40,11 @@ class AutoConnector(Thread):
 		print("reading hosts file")
 		hosts = self.get_devices_from_hosts()
 		self.orchestrator.update_devices(hosts)
+		print(hosts)
+
 		ips_last_parts = [int(ip.split(".")[3]) for ip in hosts.values()]
 		print("Connecting to already known devices")
 		self.port_scan(ips_last_parts)
-
 		rng = list(set(range(0,255)) - set(ips_last_parts))
 		print("Searching for new devices...")
 		devices = self.port_scan(rng)

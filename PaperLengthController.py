@@ -1,8 +1,11 @@
 #TODO: real number depending on rotary encoder
 from LedController import LedController
+import math
 
-amount_of_steps_per_cm = 10
-
+encoder_radius = 2.5
+encoder_steps = 2400
+encoder_perimeter = 2*math.pi*2.5
+amount_of_steps_per_cm = encoder_steps / encoder_perimeter
 
 class PaperLengthController:
 
@@ -10,6 +13,7 @@ class PaperLengthController:
     def __init__(self, orchestrator):
         self.orchestrator = orchestrator
         self.led = orchestrator.led
+        self.first_value = -1
         self.reset()
 
     def set_paper_dimensions(self, length):
@@ -36,14 +40,21 @@ class PaperLengthController:
             self.reset()"""
 
     def new_encoder_value(self, value):
-        length = value / amount_of_steps_per_cm
         if self.active:
+            if self.first_value == -1:
+                self.first_value = value
+            length = (value - self.first_value) / amount_of_steps_per_cm
+            #%math.pow(2,16)
+
             self.current_paper_length = length
+            print(self.min_paper_length)
+            print(length)
+            print(self.max_paper_length)
             if not self.in_range:
                 if self.min_paper_length <= length <= self.max_paper_length:
                     print("pushed out far enough")
                     # self.on_paper_pushed_out()
-                    self.led.set_rgb("255,0,0")
+                    self.led.set_rgb("0,255,0")
                     self.orchestrator.finished_paper_prep()
             else:
                 if not self.min_paper_length <= length <= self.max_paper_length:
