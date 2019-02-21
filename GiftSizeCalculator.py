@@ -5,7 +5,7 @@ import operator
 width_sensor_dist = 35
 height_sensor_dist = 58
 depth_sensor_dist = 51
-gift_present_sensor_dist = 80
+gift_present_sensor_dist = 85
 noise = 2
 
 

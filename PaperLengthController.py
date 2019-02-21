@@ -6,6 +6,8 @@ encoder_radius = 2.5
 encoder_steps = 2400
 encoder_perimeter = 2*math.pi*2.5
 amount_of_steps_per_cm = encoder_steps / encoder_perimeter
+default_roll_out = 30  # in cms
+
 
 class PaperLengthController:
 
@@ -44,7 +46,7 @@ class PaperLengthController:
             if self.first_value == -1:
                 self.first_value = value
             length = (value - self.first_value) / amount_of_steps_per_cm
-            #%math.pow(2,16)
+            length += default_roll_out
 
             self.current_paper_length = length
             print(self.min_paper_length)

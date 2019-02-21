@@ -150,14 +150,14 @@ class Orchestrator(StateMachine):
                 if id == 0:
                     pass
                     #self.lightpad1_darkened()
-                elif id == 1:
-                    self.moved_knife_back()
+                elif id == 2:
+                    self.cut_paper_off()
             else:
                 if id == 0:
                     pass
                     # self.lightpad1_lightened_up()
-                elif id == 1:
-                    self.cut_paper_off()
+                elif id == 2:
+                    self.moved_knife_back()
         except exceptions.TransitionNotAllowed:
             pass
             #print("Transition not allowed")
