@@ -31,7 +31,8 @@ class Orchestrator(StateMachine):
     start = State('Start')
     sizeCalculated = State('SizeCalculated')
     paperPrepared = State('PaperPrepared')
-    paperLaidOut = State('PaperLaidOut')
+    paperCutOff = State('PaperCutOff')
+    knifeMovedBack = State('KnifeMovedBack')
     giftPlaced = State('GiftProjected')
     giftWrapped = State('GiftWrapped')
     firstFold = State('FirstFold')
@@ -40,13 +41,15 @@ class Orchestrator(StateMachine):
     # actions
     new_order = idle.to(waitingForGift)
     lightpad1_darkened = waitingForGift.to(start) # when gift was placed on lightpad 1 (in the corner)
-    lightpad1_lightened_up = start.to(idle) # when gift was removed from corner
+    lightpad1_lightened_up = start.to(waitingForGift) # when gift was removed from corner
     finished_size_calc = start.to(sizeCalculated) # when size was calculated continue with preparing paper
     finished_paper_prep = sizeCalculated.to(paperPrepared) # paper is prepared. now project the paper on the table
-    lightpad2_darkened = paperPrepared.to(paperLaidOut) # paper is laid out (lightpad2 is semi-bright). now project the gift on top of the paper
-    lightpad2_lightened_up = paperLaidOut.to(paperPrepared)
-    gift_placed = paperLaidOut.to(giftPlaced)
-    gift_removed = giftPlaced.to(paperLaidOut)
+    paper_not_prepared = paperPrepared.to(sizeCalculated) # paper is not in range anymore
+    cut_paper_off = paperPrepared.to(paperCutOff) # paper is laid out (lightpad2 is semi-bright). now project the gift on top of the paper
+    moved_knife_back = paperCutOff.to(knifeMovedBack)
+    # lightpad2_darkened = paperCutOff.to(paperPrepared)
+    gift_placed = knifeMovedBack.to(giftPlaced)
+    gift_removed = giftPlaced.to(paperCutOff)
     #lightpad2_darkened_completely = paperLaidOut.to(giftPlaced) # paper is laid out. now project the gift on top of the paper
     finish = giftPlaced.to(idle)
     next_order = giftPlaced.to(waitingForGift)
@@ -63,7 +66,7 @@ class Orchestrator(StateMachine):
         # bluetooth_handler = BluetoothHandler()
         self.webSocket = WebSocket(self)
         self.webSocket.start()
-        self.paperLengthWatcher = PaperLengthController(self.on_paper_teared, self)
+        self.paperLengthWatcher = PaperLengthController(self)
         self.sizeCalculator = GiftSizeCalculator(self.finished_size_calc)
 
 
@@ -85,19 +88,22 @@ class Orchestrator(StateMachine):
             else:
                 self.new_order()
 
+    def on_enter_idle(self):
+        print('No orders')
+
+    def on_enter_waitingForGift(self):
+        self.webSocket.send_current_state()
+
     def on_enter_start(self):
         print('Measuring distance now! bsss bssss ')
         self.sizeCalculator.start()
-
-    def on_enter_idle(self):
-        print('Object was removed from top left corner')
 
     def on_enter_sizeCalculated(self):
         print('Size calculated - watching the paper now')
         self.webSocket.send_current_state()
         #self.motorDriver.set_paper_length(self.sizeCalculator.paper_width)
         #self.motorDriver.start()
-        self.paperLengthWatcher.set_paper_dimensions(self.sizeCalculator.paper_width,self.sizeCalculator.paper_height)
+        self.paperLengthWatcher.set_paper_dimensions(self.sizeCalculator.paper_height)
 
     def on_enter_paperPrepared(self):
         print('Finished paper prep!')
@@ -105,11 +111,14 @@ class Orchestrator(StateMachine):
         # send message to ws to render paper projection
         self.webSocket.send_current_state()
 
-    def on_enter_paperLaidOut(self):
-        print('Project the gift onto the paper')
-        # project gift onto the paper now
-        # send message to ws to render gift projection
+    def on_enter_paperCutOff(self):
+        print('Paper cut off')
         self.webSocket.send_current_state()
+
+    def on_enter_knifeMovedBack(self):
+        print('Knife moved back')
+        self.webSocket.send_current_state()
+
 
     def on_enter_giftPlaced(self):
         print('Project the arrows onto the paper')
@@ -137,19 +146,16 @@ class Orchestrator(StateMachine):
                 if id == 0:
                     self.lightpad1_darkened()
                 elif id == 1:
-                    self.lightpad2_darkened()
+                    self.moved_knife_back()
             else:
                 if id == 0:
                     self.lightpad1_lightened_up()
                 elif id == 1:
-                    self.lightpad2_lightened_up()
+                    self.cut_paper_off()
         except exceptions.TransitionNotAllowed:
             pass
             #print("Transition not allowed")
             #print(self.current_state)
-
-    def on_paper_teared(self, paper_length):
-        self.finished_paper_prep()
 
     def get_current_message(self):
 

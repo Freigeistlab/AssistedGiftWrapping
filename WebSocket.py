@@ -37,7 +37,6 @@ class WebSocket(Thread):
         loop.run_until_complete(task)
 
     async def send_message(self, message):
-        print("Send message")
         if USERS:
             print("Sending message to users ", message)
             [await user.send(message) for user in USERS]

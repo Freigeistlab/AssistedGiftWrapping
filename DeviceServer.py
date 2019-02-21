@@ -31,14 +31,13 @@ class DeviceServer(threading.Thread):
             mode = request.form["mode"]
             value = float(request.form["value"])
             print("[DISTANCE UNIT] " + str(id) + ":" + str(value))
-            if id == 0:
-                self.orchestrator.sizeCalculator.set_width(value)
-            if id == 1:
-                self.orchestrator.sizeCalculator.set_height(value)
-            if id == 2:
+            """if id == 0:
                 self.orchestrator.sizeCalculator.set_depth(value)
+            if id == 1:
+                self.orchestrator.sizeCalculator.set_width(value)
+            if id == 2:
+                self.orchestrator.sizeCalculator.set_height(value)"""
             if id == 3:
-                # TODO
                 try:
                     if self.orchestrator.sizeCalculator.gift_depth != -1:
                         if self.orchestrator.sizeCalculator.gift_depth -2 <= value <= self.orchestrator.sizeCalculator.gift_depth +2:
@@ -67,17 +66,20 @@ class DeviceServer(threading.Thread):
             value = request.form["value"]
             print("[BUTTON UNIT] " + str(id) + ":" + str(value))
             # id of the wrapping paper button
-            if id == 0:
-                self.orchestrator.paperLengthWatcher.finish()
+            # TODO: button is currently not needed
+            """if id == 0:
+                self.orchestrator.paperLengthWatcher.finish()"""
             return ""
 
         @self.app.route('/ScaleUnit', methods=["POST"])
         def scale_value_changed():
             id = request.form["ID"]
             mode = request.form["mode"]
-            value = request.form["value"]
+            value = float(request.form["value"])
             print("[SCALE] " + str(id) + ":" + str(value))
-            self.orchestrator.tape_teared()
+            if value >= 10:
+                print("Tape teared")
+                self.orchestrator.tape_teared()
             return ""
 
         @self.app.route('/order', methods=["POST"])
@@ -100,4 +102,4 @@ class DeviceServer(threading.Thread):
     def run(self):
         # for debug mode the flask server must run on the main thread
         self.app.run(debug=False, host='0.0.0.0')
-        return
+

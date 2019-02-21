@@ -2,6 +2,11 @@ from threading import Thread
 import time
 import operator
 
+width_sensor_dist = 35
+height_sensor_dist = 58
+depth_sensor_dist = 62
+
+
 class GiftSizeCalculator(Thread):
 
     def __init__(self, on_size_calculated):
@@ -14,15 +19,18 @@ class GiftSizeCalculator(Thread):
         self.paper_height = -1
         self.paper_overlap = 3 # how many cms the wrapping paper needs to overlap for the gift
 
-    def set_width(self, width):
+    def set_width(self, w):
+        width = width_sensor_dist - w
         print("set width to " + str(width))
         self.gift_width = width
 
-    def set_height(self, height):
+    def set_height(self, h):
+        height = height_sensor_dist - h
         print("set height to " + str(height))
         self.gift_height = height
 
-    def set_depth(self, depth):
+    def set_depth(self, d):
+        depth = depth_sensor_dist - d
         print("set depth to " + str(depth))
         self.gift_depth = depth
 
@@ -32,15 +40,15 @@ class GiftSizeCalculator(Thread):
             "height": randint(15,22),
             "depth": randint(10,18),
         }"""
-        self.set_width(30)
-        self.set_height(15)
-        self.set_depth(6)
+        self.set_width(9)
+        self.set_height(39)
+        self.set_depth(53)
 
     def run(self):
 
         self.generate_mock_values()
         while (self.gift_width == -1 or self.gift_height == -1 or self.gift_depth == -1):
-            pass
+            time.sleep(0.1)
 
         print("______________________________________________________")
         print("Calculating size...")

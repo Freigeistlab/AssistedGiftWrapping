@@ -25,16 +25,12 @@ class AutoConnector(Thread):
 
 		#creates a new socket using the given address family.
 		socket_obj = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-
 		#setting up the default timeout in seconds for new socket object
 		socket.setdefaulttimeout(0.1)
-
 		#returns 0 if connection succeeds else raises error
 		result = socket_obj.connect_ex((addr,port)) #address and port in the tuple format
 		#closes te object
-
 		socket_obj.close()
-
 		return result == 0
 
 	def run(self):
@@ -68,7 +64,7 @@ class AutoConnector(Thread):
 		devices = {}
 		me = self.ip_parts[3]
 		#ping(subnet_mask + str(100), port)
-		for i in range(1,255):
+		for i in range(2,255):
 			foreign_ip = self.subnet_mask + str(i)
 			payload = {'ip': self.ip, 'port': 5000}
 			print("ping to " + foreign_ip)
@@ -77,6 +73,7 @@ class AutoConnector(Thread):
 				r = requests.post("http://" + foreign_ip + ":" + str(self.port) + "/", data=payload)
 				device_name = r.content.decode("utf-8")
 				devices[device_name] = foreign_ip
+			print("next ip please")
 		print("Finished port scan")
 
 				# devices[...] = foreign_ip
