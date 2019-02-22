@@ -45,6 +45,7 @@ class AutoConnector(Thread):
 		ips_last_parts = [int(ip.split(".")[3]) for ip in hosts.values()]
 		print("Connecting to already known devices")
 		self.port_scan(ips_last_parts)
+		# self.port_scan([86,121])
 		rng = list(set(range(0,255)) - set(ips_last_parts))
 
 		print("Searching for new devices...")
@@ -69,7 +70,6 @@ class AutoConnector(Thread):
 						devices[k] = v
 		else:
 			print("File doesn't exist")
-
 
 		return devices
 

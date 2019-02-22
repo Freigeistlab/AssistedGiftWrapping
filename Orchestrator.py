@@ -124,7 +124,8 @@ class Orchestrator(StateMachine):
     def on_enter_knifeMovedBack(self):
         print('Knife moved back')
         self.webSocket.send_current_state()
-        self.sizeCalculator.dist_active = True
+        self.led.set_rgb("0,0,0")
+        self.gift_lightpad.active = True
 
     def on_enter_giftPlaced(self):
         print('Project the arrows onto the paper')

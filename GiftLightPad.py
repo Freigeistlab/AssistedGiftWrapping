@@ -10,6 +10,8 @@ class GiftLightPad:
         self.value = -1
 
     def set_value(self, value):
+        self.value = value
+        print("set value to ", str(value))
         if self.active:
             if value == 1:
                 print("gift is present")
@@ -17,7 +19,6 @@ class GiftLightPad:
                 t1.start()
             else:
                 self.orchestrator.gift_removed()
-        self.value = value
 
     def timer(self, value, led_id):
         if value != self.value:
