@@ -46,8 +46,10 @@ class AutoConnector(Thread):
 		print("Connecting to already known devices")
 		self.port_scan(ips_last_parts)
 		rng = list(set(range(0,255)) - set(ips_last_parts))
+
 		print("Searching for new devices...")
 		devices = self.port_scan(rng)
+		# devices = self.port_scan(range(1,255))
 
 		print(devices)
 		self.orchestrator.update_devices(devices)

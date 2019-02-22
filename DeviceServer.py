@@ -37,8 +37,8 @@ class DeviceServer(threading.Thread):
                 self.orchestrator.sizeCalculator.set_width(value)
             if id == 2:
                 self.orchestrator.sizeCalculator.set_height(value)
-            if id == 3:
-                """try:
+            """if id == 3:
+                try:
                     if self.orchestrator.sizeCalculator.gift_depth != -1:
                         if self.orchestrator.sizeCalculator.gift_depth -2 <= value <= self.orchestrator.sizeCalculator.gift_depth +2:
                             print("gift is placed")
@@ -46,8 +46,8 @@ class DeviceServer(threading.Thread):
                         else:
                             self.orchestrator.gift_removed()
                 except exceptions.TransitionNotAllowed:
-                    pass"""
-                self.orchestrator.sizeCalculator.set_distance_to_gift(value)
+                    pass
+                self.orchestrator.sizeCalculator.set_distance_to_gift(value)"""
             return ""
 
         @self.app.route('/EncoderUnit', methods=["POST"])

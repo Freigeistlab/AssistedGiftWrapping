@@ -32,6 +32,7 @@ class GiftSizeCalculator:
         self.gift_width = 30
         self.gift_height = 20
         self.gift_depth = 10
+        self.paper_height = 64
         """self.active = True
         self.set_width(9)
         self.set_height(39)

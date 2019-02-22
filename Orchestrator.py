@@ -3,6 +3,7 @@ import sys, getopt
 from statemachine import StateMachine, State, exceptions
 
 from DeviceServer import DeviceServer
+from GiftLightPad import GiftLightPad
 from GiftSizeCalculator import GiftSizeCalculator
 from LedController import LedController
 from OrderHandler import OrderHandler
@@ -64,6 +65,7 @@ class Orchestrator(StateMachine):
     def __init__(self):
         super().__init__()
         self.led = LedController(None, 43432)
+        self.gift_lightpad = GiftLightPad(self)
         self.autoConnector = AutoConnector(self)
         # blocking call
         self.autoConnector.start()
@@ -146,17 +148,12 @@ class Orchestrator(StateMachine):
 
     def handle_lightpad_change(self, id, value):
         try:
-            if value == 0:
-                if id == 0:
-                    pass
-                    #self.lightpad1_darkened()
-                elif id == 2:
+            if id == 1:
+                self.gift_lightpad.set_value(value)
+            elif id == 2:
+                if value == 0:
                     self.cut_paper_off()
-            else:
-                if id == 0:
-                    pass
-                    # self.lightpad1_lightened_up()
-                elif id == 2:
+                else:
                     self.moved_knife_back()
         except exceptions.TransitionNotAllowed:
             pass
