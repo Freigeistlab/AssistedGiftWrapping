@@ -54,7 +54,7 @@ class Orchestrator(StateMachine):
     moved_knife_back = paperCutOff.to(knifeMovedBack)
     # lightpad2_darkened = paperCutOff.to(paperPrepared)
     gift_placed = knifeMovedBack.to(giftPlaced)
-    gift_removed = giftPlaced.to(paperCutOff)
+    gift_removed = giftPlaced.to(knifeMovedBack)
     #lightpad2_darkened_completely = paperLaidOut.to(giftPlaced) # paper is laid out. now project the gift on top of the paper
     finish = giftPlaced.to(idle)
     next_order = giftPlaced.to(waitingForGift)

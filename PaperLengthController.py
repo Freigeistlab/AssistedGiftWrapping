@@ -6,7 +6,7 @@ encoder_radius = 2.5
 encoder_steps = 2400
 encoder_perimeter = 2*math.pi*2.5
 amount_of_steps_per_cm = encoder_steps / encoder_perimeter
-default_roll_out = 30  # in cms
+default_roll_out = 0  # in cms
 
 
 class PaperLengthController:
