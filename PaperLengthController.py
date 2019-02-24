@@ -23,7 +23,7 @@ class PaperLengthController:
         self.max_paper_length = length + 20
         print("paper length should be in range " + str(self.min_paper_length) + " " + str(self.max_paper_length))
         self.active = True
-        self.led.set_rgb("255,0,0")
+        self.led.set_rgb("0,0,0")
 
     # TODO: needs to be called when the user cut off the paper (probably noticed by button press)
     def reset(self):
