@@ -1,5 +1,3 @@
-#TODO: real number depending on rotary encoder
-from LedController import LedController
 import math
 
 encoder_radius = 2.5
@@ -12,6 +10,7 @@ default_roll_out = 0  # in cms
 class PaperLengthController:
 
     in_range = False
+
     def __init__(self, orchestrator):
         self.orchestrator = orchestrator
         self.led = orchestrator.led
@@ -35,11 +34,6 @@ class PaperLengthController:
         self.current_paper_length = -1
         if self.led is not None:
             self.led.set_rgb("255,0,0")
-
-    """def finish(self):
-        if self.active:
-            self.on_paper_pushed_out(self.current_paper_length)
-            self.reset()"""
 
     def new_encoder_value(self, value):
         if self.active:

@@ -45,17 +45,15 @@ class Orchestrator(StateMachine):
 
     # actions
     new_order = idle.to(start)
-    #lightpad1_darkened = waitingForGift.to(start) # when gift was placed on lightpad 1 (in the corner)
-    #lightpad1_lightened_up = start.to(waitingForGift) # when gift was removed from corner
     finished_size_calc = start.to(sizeCalculated) # when size was calculated continue with preparing paper
     finished_paper_prep = sizeCalculated.to(paperPrepared) # paper is prepared. now project the paper on the table
     paper_not_prepared = paperPrepared.to(sizeCalculated) # paper is not in range anymore
     cut_paper_off = paperPrepared.to(paperCutOff) # paper is laid out (lightpad2 is semi-bright). now project the gift on top of the paper
     moved_knife_back = paperCutOff.to(knifeMovedBack)
-    # lightpad2_darkened = paperCutOff.to(paperPrepared)
+
     gift_placed = knifeMovedBack.to(giftPlaced)
     gift_removed = giftPlaced.to(knifeMovedBack)
-    #lightpad2_darkened_completely = paperLaidOut.to(giftPlaced) # paper is laid out. now project the gift on top of the paper
+
     finish = giftPlaced.to(idle)
     next_order = giftPlaced.to(waitingForGift)
     tape_teared = giftPlaced.to(firstFold) | firstFold.to(secondFold) | secondFold.to(start)
@@ -67,20 +65,13 @@ class Orchestrator(StateMachine):
         self.led = LedController(None, 43432)
         self.gift_lightpad = GiftLightPad(self)
         self.autoConnector = AutoConnector(self)
-        # blocking call
         self.autoConnector.start()
 
-        # bluetooth_handler = BluetoothHandler()
         self.webSocket = WebSocket(self)
         self.webSocket.start()
         self.paperLengthWatcher = PaperLengthController(self)
         self.sizeCalculator = GiftSizeCalculator(self.finished_size_calc, self.gift_placed, self.led)
 
-        #lightpad1 = LightPad(self.handle_lightpad_change, 1)
-        #lightpad2 = LightPad(self.handle_lightpad_change, 2)
-        #lightpad1.start()
-        #lightpad2.start()
-        #self.motorDriver = MotorDriver(self.finished_paper_prep)
         self.deviceServer = DeviceServer(self)
         self.deviceServer.start()
 
@@ -103,6 +94,7 @@ class Orchestrator(StateMachine):
     def on_enter_start(self):
         print('New Order')
         self.sizeCalculator.active = True
+        self.webSocket.send_current_state()
 
     def on_enter_sizeCalculated(self):
         print('Size calculated - watching the paper now')
