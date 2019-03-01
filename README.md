@@ -14,7 +14,7 @@ Make sure you have PostgreSQL installed as our tool uses a pg wrapper
 On Linux systems run:
 
 ```
-	sudo apt install postgresql
+	sudo apt install postgresql libpq-dev
 ```
 
 Afterwards install the packages using pip:
