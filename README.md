@@ -7,9 +7,25 @@ This is done using various Freigeist-IOT-devices
 like the [scale-unit](https://github.com/Freigeistlab/scaleUnit), lightpads and rotary-encoders as input devices and projections and an
  [led-unit](https://github.com/Freigeistlab/ledUnit) to guide the user.
  
- ### Execution
+### Installation
+
+Make sure you have PostgreSQL installed as our tool uses a pg wrapper
+
+On Linux systems run:
+
+```
+	sudo apt install postgresql libpq-dev
+```
+
+Afterwards install the packages using pip:
+
+```
+	pip3 install -r requirements.txt
+```
+
+### Execution
  
- ```
+```
 	python3 Orchestrator.py	
 ```
 
