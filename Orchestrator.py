@@ -42,6 +42,7 @@ class Orchestrator(StateMachine):
     giftWrapped = State('GiftWrapped')
     firstFold = State('FirstFold')
     secondFold = State('SecondFold')
+    thirdFold = State('ThirdFold')
 
     # actions
     new_order = idle.to(start)
@@ -56,7 +57,7 @@ class Orchestrator(StateMachine):
 
     finish = giftPlaced.to(idle)
     next_order = giftPlaced.to(waitingForGift)
-    tape_teared = giftPlaced.to(firstFold) | firstFold.to(secondFold) | secondFold.to(start)
+    tape_teared = giftPlaced.to(firstFold) | firstFold.to(secondFold) | secondFold.to(thirdFold) | thirdFold.to(start)
 
     test_projection = idle.to(paperPrepared)
 
@@ -137,6 +138,10 @@ class Orchestrator(StateMachine):
 
     def on_enter_secondFold(self):
         print("second fold done")
+        self.webSocket.send_current_state()
+
+    def on_enter_thirdFold(self):
+        print("third fold done")
         self.webSocket.send_current_state()
 
     def handle_lightpad_change(self, id, value):

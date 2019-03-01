@@ -2,7 +2,7 @@ from flask import Flask, request
 from flask_cors import CORS
 import threading
 import json
-from statemachine import exceptions
+import time
 
 class DeviceServer(threading.Thread):
 
@@ -11,6 +11,7 @@ class DeviceServer(threading.Thread):
         self.app = Flask(__name__)
         CORS(self.app)
         self.orchestrator = orchestrator
+        self.last_scale_event = time.time()
 
         @self.app.route('/', methods=["GET"])
         def index():
@@ -79,8 +80,12 @@ class DeviceServer(threading.Thread):
             value = float(request.form["value"])
             print("[SCALE] " + str(id) + ":" + str(value))
             if value <= -10:
-                print("Tape teared")
-                self.orchestrator.tape_teared()
+                if time.time() - self.last_scale_event > 5:
+                    print("Tape teared")
+                    self.orchestrator.tape_teared()
+                    self.last_scale_event = time.time()
+                else:
+                    print("Not enough time elapsed since last event")
             return ""
 
         @self.app.route('/order', methods=["POST"])

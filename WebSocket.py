@@ -39,7 +39,8 @@ class WebSocket(Thread):
     async def send_message(self, message):
         if USERS:
             print("Sending message to users ", message)
-            [await user.send(message) for user in USERS]
+            for user in USERS:
+                await user.send(message)
             print("message sent")
 
     def run(self):
