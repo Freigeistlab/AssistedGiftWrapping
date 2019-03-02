@@ -10,7 +10,7 @@ class OrderHandler:
 
     def __init__(self, on_new_order):
         self.on_new_order = on_new_order
-        try:
+        """try:
             self.conn = psycopg2.connect(dbname="wrapper_development", host="localhost", port=5432)
             # self.conn = psycopg2.connect("dbname=wrapper_production user=wrapper")
             self.cur = self.conn.cursor()
@@ -18,9 +18,7 @@ class OrderHandler:
             #self.get_column_names("order_items")
         except psycopg2.OperationalError:
             print("No db running. Please start the dashboard")
-            exit()
-
-
+            exit()"""
 
     def get_open_orders(self):
         self.cur.execute("SELECT * FROM orders WHERE order_status_id = 2 ORDER BY created_at ASC")
@@ -36,9 +34,19 @@ class OrderHandler:
             self.get_next_order()
 
     def add_order(self, order):
+        print("order")
+        print(order)
+        #id = str(order["id"])
         self.orders.put_nowait(order)
         if self.current_order is None:
-            self.get_next_order()
+            self.current_order = self.orders.get_nowait()
+            self.on_new_order()
+
+    """self.cur.execute("SELECT * FROM orders WHERE id = '{0}';".format(order["id"]))
+        for order in self.cur.fetchall():
+            self.orders.put_nowait(order)
+            print("Added new order")
+            print(order)"""
 
     def get_next_order(self):
         if self.current_order is not None:
@@ -56,7 +64,7 @@ class OrderHandler:
             #  WHERE id in (%s);" % order_item_ids_str
             current_order_items = {}
             self.cur.execute("SELECT p.name, p.image, pg.id, pg.name FROM products AS p, product_groups AS pg WHERE p.id in (%s) AND p.product_group_id = pg.id;" % order_item_ids_str)
-
+            item_json = {}
             # add new product groups here
             for item in self.cur.fetchall():
                 item_json = {
@@ -78,6 +86,8 @@ class OrderHandler:
 
             self.cur.execute("UPDATE orders SET order_status_id = 2 WHERE id = %s ;", str(current_order_id))
             self.conn.commit()
+            print("Next order")
+            print(item_json)
             self.on_new_order()
         else:
             self.current_order = None
@@ -87,8 +97,6 @@ class OrderHandler:
     def get_order_item_ids(self, order_id):
         self.cur.execute("SELECT p.id FROM orders AS o, order_items AS oi, products AS p WHERE o.id= %s AND p.id = oi.product_id AND o.id = oi.order_id;", str(order_id) )
         return self.cur.fetchall()
-
-
 
     def get_table_names(self):
         self.cur.execute("""SELECT table_name FROM information_schema.tables
