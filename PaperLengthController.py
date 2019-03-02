@@ -5,7 +5,8 @@ encoder_steps = 2400
 encoder_perimeter = 2*math.pi*2.5
 amount_of_steps_per_cm = encoder_steps / encoder_perimeter
 default_roll_out = 0  # in cms
-
+revolution_bound = 50000
+revolution_steps = 65536
 
 class PaperLengthController:
 
@@ -39,6 +40,13 @@ class PaperLengthController:
         if self.active:
             if self.first_value == -1:
                 self.first_value = value
+                self.last_value = value
+
+            if value - self.last_value > revolution_bound:
+                self.first_value += revolution_steps
+            elif self.last_value - value > revolution_bound:
+                self.first_value -= revolution_steps
+
             length = (value - self.first_value) / amount_of_steps_per_cm
             length += default_roll_out
 
@@ -50,12 +58,15 @@ class PaperLengthController:
                 if self.min_paper_length <= length <= self.max_paper_length:
                     print("pushed out far enough")
                     # self.on_paper_pushed_out()
-                    self.led.set_rgb("0,255,0")
                     self.orchestrator.finished_paper_prep()
+                    self.led.set_rgb("0,255,0")
+                else:
+                    self.led.set_rgb("255,0,0")
+
             else:
                 if not self.min_paper_length <= length <= self.max_paper_length:
                     print("not in range")
                     self.led.set_rgb("255,0,0")
                     self.orchestrator.paper_not_prepared()
-
             self.in_range = self.min_paper_length <= length <= self.max_paper_length
+            self.last_value = value
