@@ -57,9 +57,10 @@ class Orchestrator(StateMachine):
 
     finish = giftPlaced.to(idle)
     next_order = giftPlaced.to(waitingForGift)
-    tape_teared = giftPlaced.to(firstFold) | firstFold.to(secondFold) | secondFold.to(thirdFold) | thirdFold.to(start)
+    tape_teared = giftPlaced.to(firstFold) | firstFold.to(secondFold) | secondFold.to(thirdFold)
+    finish_order = thirdFold.to(start)
 
-    test_projection = idle.to(paperPrepared)
+    test_projection = idle.to(knifeMovedBack)
 
     def __init__(self):
         super().__init__()
@@ -76,10 +77,17 @@ class Orchestrator(StateMachine):
         self.deviceServer = DeviceServer(self)
         self.deviceServer.start()
 
+        self.orderHandler = OrderHandler(self.new_order)
         if not self.fakeorder:
-            self.orderHandler = OrderHandler(self.new_order)
             self.orderHandler.get_open_orders()
         else:
+            current_order = {
+                "id" : 1,
+                "paper_id": 3,
+                "deco_ids": [5,6,7]
+            }
+            self.orderHandler.current_order = current_order
+
             if self.testprojections:
                 self.sizeCalculator.generate_mock_values()
                 self.test_projection()
@@ -162,7 +170,8 @@ class Orchestrator(StateMachine):
 
         state_id = self.current_state.identifier
         if hasattr(self, 'orderHandler'):
-            current_order = self.orderHandler.current_order_items
+            #current_order = self.orderHandler.current_order_items
+            current_order = self.orderHandler.current_order
         else:
             current_order = {}
         message = {

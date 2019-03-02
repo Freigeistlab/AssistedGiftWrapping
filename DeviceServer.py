@@ -4,6 +4,9 @@ import threading
 import json
 import time
 
+from statemachine import exceptions
+
+
 class DeviceServer(threading.Thread):
 
     def __init__(self, orchestrator):
@@ -67,10 +70,10 @@ class DeviceServer(threading.Thread):
             id = int(request.form["ID"])
             value = request.form["value"]
             print("[BUTTON UNIT] " + str(id) + ":" + str(value))
-            # id of the wrapping paper button
-            # TODO: button is currently not needed
-            """if id == 0:
-                self.orchestrator.paperLengthWatcher.finish()"""
+            try:
+                self.orchestrator.finish_order()
+            except exceptions.TransitionNotAllowed:
+                pass
             return ""
 
         @self.app.route('/ScaleUnit', methods=["POST"])

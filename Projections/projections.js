@@ -1,17 +1,33 @@
 const ws = new WebSocket("ws://localhost:5678/");
-const middle = {
-  x: $(window).width() / 2,
-  y: $(window).height() / 2,
-};
+
 
 const cmInPixels = 10 * 1.133333;
+const xOffset = 100;
 const border_width = 4;
-
 //let isGiftLandscape = true;
 const first_color = "#00FF00";
 const second_color = "#00FF00";
 let tapeWidth = 60;
 let tapeHeight = 30;
+
+const middle = {
+  x: $(window).width() / 2 + xOffset,
+  y: $(window).height() / 2,
+};
+
+const db = {
+  5: "deco/deko1.jpg",
+  6: "deco/schleife1.jpg",
+  7: "deco/schleife2.jpg",
+  8: "deco/karte1.jpg",
+  9: "deco/deko1.jpg",
+  3: "wrapping_papers/1.jpg",
+  4: "wrapping_papers/2.jpg",
+  56: "wrapping_papers/2.jpg",
+  63: "wrapping_papers/2.jpg",
+  64: "wrapping_papers/2.jpg",
+};
+
 
 const tape_text = 'Bitte an den gestrichelten Linien falten und dann Klebeband auf die rote Stelle kleben.';
 
@@ -19,7 +35,7 @@ ws.onmessage = function (event) {
   // convert the string we get into a JSON object
   const json = JSON.parse(event.data);
   console.log("Message", json);
-  let { paper_width, paper_height, gift_width, gift_height, gift_depth } = json;
+  let { paper_width, paper_height, gift_width, gift_height, gift_depth, current_order } = json;
   if (paper_width < paper_height){
     //swap variables
     [gift_width,gift_height] = [gift_height,gift_width];
@@ -40,7 +56,7 @@ ws.onmessage = function (event) {
       showInstructions('Bitte Messer zur\u00FCck schieben');
       break;
     case "knifeMovedBack":
-      renderGiftOnPaperFrame(paper_width * cmInPixels, paper_height * cmInPixels, gift_width * cmInPixels, gift_height * cmInPixels);
+      renderGiftOnPaperFrame(paper_width * cmInPixels, paper_height * cmInPixels, gift_width * cmInPixels, gift_height * cmInPixels, current_order.paper_id);
       break;
     case "giftPlaced":
       renderFirstFold(paper_width * cmInPixels, paper_height * cmInPixels, gift_width * cmInPixels, gift_height * cmInPixels, gift_depth * cmInPixels);
@@ -50,6 +66,9 @@ ws.onmessage = function (event) {
       break;
     case "secondFold":
       renderThirdFold(paper_width * cmInPixels, paper_height * cmInPixels, gift_width * cmInPixels, gift_height * cmInPixels, gift_depth * cmInPixels);
+      break;
+    case "thirdFold":
+      renderDeco(gift_width * cmInPixels, gift_height * cmInPixels, current_order.paper_id, current_order.deco_ids);
       break;
     default:
       hideAll();
@@ -66,14 +85,14 @@ function showInstructionsWithPos(text, x, y){
 }
 
 
-function renderGiftOnPaperFrame(paper_width, paper_height, gift_width, gift_height){
+function renderGiftOnPaperFrame(paper_width, paper_height, gift_width, gift_height, paper_id){
   hideAll();
   const top_left_x = middle.x - gift_width/2;
   const top_left_y = middle.y - gift_height/2;
   const top_left_x_paper = middle.x - paper_width/2 - border_width;
   const top_left_y_paper = middle.y - paper_height/2 - border_width;
-  $("#paperFrame").css({top: top_left_y_paper, left: top_left_x_paper, width: paper_width, height: paper_height, visibility: "visible"});
   $("#giftOnPaper").css({top: top_left_y, left: top_left_x, width: gift_width, height: gift_height, visibility: "visible"});
+  $("#paperImg").css({top: top_left_y_paper, left: top_left_x_paper, width: paper_width, height: paper_height, visibility: "visible"}).attr("src","img/" + db[paper_id]);
 
 }
 
@@ -141,11 +160,27 @@ function renderFalt(faltID, paper_width, paper_height, gift_width, gift_height){
 }
 
 
+function renderDeco(gift_width, gift_height, paper_id, deco_ids){
+  hideAll();
+  const decoDimensions = 40;
+  $("#decoContainer").css({visibility: "visible", width: gift_width/2, height: gift_height/2, left: middle.x + gift_width, top: middle.y - gift_height/2, position: "absolute"}).attr("src","img/" + db[paper_id]);
+  if (deco_ids.length > 0){
+    $("#deco1").css({visibility: "visible", width: decoDimensions, height: decoDimensions, left: middle.x + gift_width + 50, top: middle.y - gift_height/2 + 10, position: "absolute"}).attr("src","img/" + db[deco_ids[0]]);
+    if (deco_ids.length > 1){
+      $("#deco2").css({visibility: "visible", width: decoDimensions, height: decoDimensions, left: middle.x + gift_width + 20, top:  middle.y - gift_height/2 + 80, position: "absolute"}).attr("src","img/" + db[deco_ids[1]]);
+    }
+  }
+}
+
+
 function hideAll(){
   $(".verticalIndicator").css({visibility: "hidden"});
   $(".horizontalIndicator").css({visibility: "hidden"});
   $(".diagonalIndicator").css({visibility: "hidden"});
-  $("#paperFrame").css({visibility: "hidden"});
+  $("#paperImg").css({visibility: "hidden"});
+  $("#decoContainer").css({visibility: "hidden"});
+  $("#deco1").css({visibility: "hidden"});
+  $("#deco2").css({visibility: "hidden"});
   $("#giftOnPaper").css({visibility: "hidden"});
   $("#instructions").css({visibility: "hidden"});
   $("#falt_instructions").css({visibility: "hidden"});
