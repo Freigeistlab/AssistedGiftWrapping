@@ -3,9 +3,11 @@
 This system receives wrapping-orders from the [rails-dashboard](https://github.com/Freigeistlab/rails-wrapping-order-app) 
 and then manages the user interaction to assist cognitively impaired people to wrap gifts. 
 
-This is done using various Freigeist-IOT-devices 
-like the [scale-unit](https://github.com/Freigeistlab/scaleUnit), lightpads and rotary-encoders as input devices and projections and an
- [led-unit](https://github.com/Freigeistlab/ledUnit) to guide the user.
+This is done using various Freigeist-IOT-devices from the [IOT hardware toolkit](https://github.com/Freigeistlab/IOTUnits)
+like the scale unit, distance units, light sensors and rotary-encoders as input devices and a projector and an
+led-unit to guide the user.
+
+![This is how the system looks like](https://user-images.githubusercontent.com/10089188/68073755-c07ae000-fd50-11e9-8223-35cc4cc1cf66.png)
  
 ### Installation
 
